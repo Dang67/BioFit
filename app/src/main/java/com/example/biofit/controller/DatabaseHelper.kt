@@ -25,7 +25,7 @@ class SQLiteHelper(context: Context) :
                 targetWeight REAL
             )
         """.trimIndent()
-
+// hehe
         val createUserPlan = """
             CREATE TABLE UserPlan (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
