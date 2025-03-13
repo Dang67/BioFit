@@ -69,9 +69,13 @@ dependencies {
 
     implementation(libs.chromecast.sender)
     implementation(libs.coil.compose)
-    implementation(libs.jsoup)
     implementation(libs.generativeai)
     implementation (libs.bcrypt)
+
+    // Firebase
+    implementation ("com.google.firebase:firebase-bom:32.7.0")
+    implementation("com.google.firebase:firebase-auth-ktx:21.1.0")
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
 
     implementation (libs.retrofit)
     implementation (libs.converter.gson)

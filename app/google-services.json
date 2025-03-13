@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "323575301650",
+    "project_id": "biofithealth-a21b7",
+    "storage_bucket": "biofithealth-a21b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:323575301650:android:662344fddde1ba0f457acb",
+        "android_client_info": {
+          "package_name": "com.example.biofit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "323575301650-43ps3cb5hnmcr8qnlkj3rs0ak8umi4k2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWJvAEYH4oNfK562wtsz0THRy1AUHl_9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "323575301650-43ps3cb5hnmcr8qnlkj3rs0ak8umi4k2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
