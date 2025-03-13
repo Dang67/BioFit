@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -211,17 +212,39 @@ fun InfoUserBirthdayContent(
             if (showDatePicker) {
                 val context = LocalContext.current
                 val calendar = Calendar.getInstance()
+                val currentYear = calendar.get(Calendar.YEAR)
+                val minYear = 1920 // Giới hạn năm tối thiểu
+
                 DatePickerDialog(
                     context,
                     { _, selectedYear, selectedMonth, selectedDay ->
-                        val selectedDate = "$selectedYear-${selectedMonth + 1}-$selectedDay"
-                        viewModel.dateOfBirth.value = selectedDate // Lưu vào ViewModel
+                        if (selectedYear > currentYear) {
+                            // Không cho phép chọn năm sinh trong tương lai
+                            Toast.makeText(context, "Bạn không thể chọn năm sinh trong tương lai!", Toast.LENGTH_SHORT).show()
+                        } else if (selectedYear < minYear) {
+                            // Không cho phép chọn năm sinh quá xa trong quá khứ
+                            Toast.makeText(context, "Năm sinh không hợp lệ! Vui lòng chọn từ $minYear trở đi.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Định dạng ngày và tháng thành 2 chữ số
+                            val formattedMonth = String.format("%02d", selectedMonth + 1) // Tháng bắt đầu từ 0 nên +1
+                            val formattedDay = String.format("%02d", selectedDay)
+                            val selectedDate = "$selectedYear-$formattedMonth-$formattedDay"
+
+                            // Lưu ngày sinh vào ViewModel
+                            viewModel.dateOfBirth.value = selectedDate
+                        }
+
                         showDatePicker = false
                     },
                     calendar.get(Calendar.YEAR),
                     calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH)
-                ).show()
+                ).apply {
+                    // Giới hạn ngày được chọn trong khoảng hợp lệ
+                    datePicker.minDate = Calendar.getInstance().apply { set(minYear, 0, 1) }.timeInMillis // Từ 01/01/1920
+                    datePicker.maxDate = calendar.timeInMillis // Đến ngày hiện tại
+                }.show()
+
             }
         }
 
