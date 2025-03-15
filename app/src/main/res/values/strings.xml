@@ -64,6 +64,7 @@
     <string name="account">Account</string>
     <string name="delete_data">Delete data</string>
     <string name="delete_account">Delete account</string>
+    <string name="upgrade_now">Upgrade now</string>
     <string name="sign_out">SIGN OUT</string>
     <string name="calo_day">calo / day</string>
     <string name="calo_week">calo / week</string>
@@ -300,6 +301,7 @@
     <string name="congratulations_on_completing_your_water_drinking_goal_today">Congratulations on completing your water drinking goal today!</string>
     <string name="well_done">Well done!</string>
     <string name="invalid_water">Invalid water</string>
+    <string name="default_web_client_id">323575301650-43ps3cb5hnmcr8qnlkj3rs0ak8umi4k2.apps.googleusercontent.com</string>
     <string name="exercise_goal_not_provided">Exercise goal not provided</string>
     <string name="intensity_not_provided">Intensity not provided</string>
     <string name="des_create_exercise">You just need to provide the time and calories consumed of this new exercise at Amateur level and Low training intensity, the system will calculate the time and calories consumed for the remaining levels (Professional) and training intensity (Medium, High).</string>
