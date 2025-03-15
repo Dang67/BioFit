@@ -4,7 +4,12 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +42,8 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biofit.R
 import com.example.biofit.data.model.dto.UserDTO
 import com.example.biofit.data.utils.DailyLogSharedPrefsHelper
@@ -59,8 +67,27 @@ import com.example.biofit.ui.activity.TargetActivity
 import com.example.biofit.ui.activity.UpgradeActivity
 import com.example.biofit.ui.components.DefaultDialog
 import com.example.biofit.ui.components.MainCard
+import com.example.biofit.ui.components.SelectionDialog
 import com.example.biofit.ui.components.getStandardPadding
 import com.example.biofit.ui.theme.BioFitTheme
+import com.example.biofit.view_model.UpdateUserViewModel
+import android.os.Environment
+import androidx.core.content.FileProvider
+import android.provider.MediaStore
+import android.util.Base64
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import coil.compose.rememberAsyncImagePainter
+import com.example.biofit.view_model.LoginViewModel
+import java.io.File
 
 @Composable
 fun ProfileScreen(userData: UserDTO) {
@@ -90,11 +117,21 @@ fun ProfileScreen(userData: UserDTO) {
     }
 }
 
+fun base64ToBitmap(base64String: String?): Bitmap? {
+    return try {
+        val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
+        BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    } catch (e: Exception) {
+        null
+    }
+}
+
 @Composable
 fun ProfileContent(
     userData: UserDTO,
     standardPadding: Dp,
-    modifier: Modifier
+    modifier: Modifier,
+    loginViewModel: LoginViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -102,6 +139,35 @@ fun ProfileContent(
     var showSignOutDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteAccountDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteDataDialog by rememberSaveable { mutableStateOf(false) }
+    var showAvatarDialog by rememberSaveable { mutableStateOf(false) }
+    val viewModel: UpdateUserViewModel = viewModel()
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+        onResult = { bitmap ->
+            bitmap?.let {
+                viewModel.setAvatar(it)
+                viewModel.updateUser(context, userData.userId, loginViewModel) {
+                    Toast.makeText(context, "Update avatar successfully", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    )
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                viewModel.setAvatar(bitmap)
+                viewModel.updateUser(context, userData.userId, loginViewModel) {
+                    Toast.makeText(context, "Update avatar successfully", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    )
+
+    val avatarBitmap = viewModel.avatarBitmap.value ?: userData.avatar?.let { base64ToBitmap(it) }
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(standardPadding * 2),
@@ -113,13 +179,38 @@ fun ProfileContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(R.drawable.fake_avatar),
+                    painter = if (avatarBitmap != null) {
+                        BitmapPainter(avatarBitmap.asImageBitmap()) // Dùng BitmapPainter nếu có avatar
+                    } else {
+                        painterResource(R.drawable.fake_avatar) // Dùng ảnh mặc định nếu không có avatar
+                    },
                     contentDescription = "Avatar",
                     modifier = Modifier
                         .size(standardPadding * 5)
-                        .clip(CircleShape),
+                        .clip(CircleShape)
+                        .clickable { showAvatarDialog = true },
                     contentScale = ContentScale.Crop
                 )
+
+                if (showAvatarDialog) {
+                    SelectionDialog(
+                        selectedOption = null,
+                        onOptionSelected = { option ->
+                            showAvatarDialog = false
+                            when (option) {
+                                context.getString(R.string.take_a_photo) -> cameraLauncher.launch(null)
+                                context.getString(R.string.choose_from_gallery) -> galleryLauncher.launch("image/*")
+                            }
+                        },
+                        onDismissRequest = { showAvatarDialog = false },
+                        title = R.string.choose_how_to_set_avatar,
+                        listOptions = listOf(
+                            "Take a photo",
+                            "Choose from gallery",
+                        ),
+                        standardPadding = standardPadding
+                    )
+                }
 
                 Column(
                     modifier = Modifier

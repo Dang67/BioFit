@@ -302,5 +302,15 @@
     <string name="well_done">Well done!</string>
     <string name="invalid_water">Invalid water</string>
     <string name="default_web_client_id">323575301650-43ps3cb5hnmcr8qnlkj3rs0ak8umi4k2.apps.googleusercontent.com</string>
-    <string name="title_activity_payment">PaymentActivity</string>
+    <string name="exercise_goal_not_provided">Exercise goal not provided</string>
+    <string name="intensity_not_provided">Intensity not provided</string>
+    <string name="des_create_exercise">You just need to provide the time and calories consumed of this new exercise at Amateur level and Low training intensity, the system will calculate the time and calories consumed for the remaining levels (Professional) and training intensity (Medium, High).</string>
+    <string name="des_update_exercise">You just need to edit the time and calories burned of this exercise at Amateur level and Low training intensity, the system will calculate and update the time and calories burned for the remaining levels (Professional) and training intensity (Medium, High).</string>
+    <string name="delete_exercise">Delete exercise</string>
+    <string name="exercises_not_updated_yet">Exercises not updated yet!</string>
+    <string name="exercise_updated_successfully">Exercise updated successfully</string>
+    <string name="exercise_deleted_successfully">Exercise deleted successfully</string>
+    <string name="choose_how_to_set_avatar">Choose how to set avatar</string>
+    <string name="take_a_photo">Take a photo</string>
+    <string name="choose_from_gallery">Choose from gallery</string>
 </resources>

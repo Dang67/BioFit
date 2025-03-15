@@ -1,8 +1,10 @@
 package com.example.biofit.ui.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,15 +24,21 @@ import androidx.compose.ui.unit.Dp
 import com.example.biofit.R
 import com.example.biofit.ui.theme.BioFitTheme
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExerciseItem(
     exercise: String,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     standardPadding: Dp,
     modifier: Modifier
 ) {
     Column(
-        modifier = modifier.clickable { onClick() },
+        modifier = modifier
+            .combinedClickable(
+                onClick = { onClick() },
+                onLongClick = { onLongClick() }
+            ),
         verticalArrangement = Arrangement.spacedBy(standardPadding / 2),
     ) {
         Row(
@@ -113,6 +121,7 @@ private fun ExerciseItemDarkModePreview() {
             ExerciseItem(
                 exercise = "Exercise 1",
                 onClick = {},
+                onLongClick = {},
                 standardPadding = getStandardPadding().first,
                 modifier = getStandardPadding().second
             )
@@ -139,6 +148,7 @@ private fun ExerciseItemPreview() {
             ExerciseItem(
                 exercise = "Exercise 1",
                 onClick = {},
+                onLongClick = {},
                 standardPadding = getStandardPadding().first,
                 modifier = getStandardPadding().second
             )

@@ -61,7 +61,7 @@ fun SelectionDialogScreen() {
 
 @Composable
 fun SelectionDialog(
-    selectedOption: String,
+    selectedOption: String? = null,
     onOptionSelected: (String) -> Unit,
     onDismissRequest: () -> Unit,
     title: Int,

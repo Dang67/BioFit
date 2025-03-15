@@ -152,6 +152,8 @@ fun ActionPopup(
                                     /*if (title != R.string.drinking_water) {
                                         onDismissPopup()
                                     }*/
+
+                                    onDismissPopup()
                                 },
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {

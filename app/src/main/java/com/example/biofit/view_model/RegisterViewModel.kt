@@ -9,6 +9,7 @@ import com.example.biofit.data.model.request.RegisterRequest
 import com.example.biofit.data.model.dto.UserDTO
 import com.example.biofit.data.remote.RetrofitClient
 import com.example.biofit.ui.activity.InfoUserNameActivity
+import com.example.biofit.ui.activity.RegisterSuccessfullyActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,7 +69,7 @@ class RegisterViewModel : ViewModel() {
                     user?.let {
                         _userData.value = it
                         loginViewModel.saveUserData(context, it)
-                        val intent = Intent(context, InfoUserNameActivity::class.java)
+                        val intent = Intent(context, RegisterSuccessfullyActivity::class.java)
                         context.startActivity(intent)
                     }
                 } else if (response.code() == 409) {

@@ -57,11 +57,12 @@
         <activity android:name=".ui.activity.TargetActivity" />
         <activity android:name=".ui.activity.AIChatbotActivity" />
         <activity android:name=".ui.activity.CaloriesDistributionActivity" />
-        <activity android:name=".ui.activity.CreateAndUpdateExerciseActivity" />
+        <activity android:name=".ui.activity.UpdateExerciseActivity" />
         <activity android:name=".ui.activity.CreateFoodActivity" />
         <activity android:name=".ui.activity.FoodDetailActivity" />
         <activity android:name=".ui.activity.MealsDetailActivity" />
         <activity android:name=".ui.activity.UpgradeActivity" />
+        <activity android:name=".ui.activity.CreateExerciseActivity" />
     </application>
 
 </manifest>

@@ -300,4 +300,15 @@
     <string name="congratulations_on_completing_your_water_drinking_goal_today">Chúc mừng bạn đã hoàn thành mục tiêu uống nước hôm nay!</string>
     <string name="well_done">Làm tốt lắm!</string>
     <string name="invalid_water">Lượng nước không hợp lệ</string>
+    <string name="exercise_goal_not_provided">Exercise goal not provided</string>
+    <string name="intensity_not_provided">Intensity not provided</string>
+    <string name="des_create_exercise">Bạn chỉ cần cung cấp thời gian và lượng calo tiêu thụ của bài tập mới này ở cấp độ Nghiệp dư và cường độ luyện tập Thấp, hệ thống sẽ tính toán thời gian và lượng calo tiêu thụ cho các cấp độ (Chuyên nghiệp) và cường độ luyện tập (Vừa, Cao) còn lại.</string>
+    <string name="des_update_exercise">Bạn chỉ cần chỉnh sửa thời gian và lượng calo tiêu thụ của bài tập này ở cấp độ Nghiệp dư và cường độ luyện tập Thấp, hệ thống sẽ tính toán và cập nhật lại thời gian và lượng calo tiêu thụ cho các cấp độ (Chuyên nghiệp) và cường độ luyện tập (Vừa, Cao) còn lại.</string>
+    <string name="delete_exercise">Xoá bài tập</string>
+    <string name="exercises_not_updated_yet">Bài tập chưa được cập nhật!</string>
+    <string name="exercise_updated_successfully">Bài tập đã được cập nhật thành công</string>
+    <string name="exercise_deleted_successfully">Bài tập đã được xoá thành công</string>
+    <string name="choose_how_to_set_avatar">Chọn cách cài đặt ảnh đại diện</string>
+    <string name="take_a_photo">Chụp ảnh</string>
+    <string name="choose_from_gallery">Chọn từ thư viện</string>
 </resources>

@@ -7,6 +7,5 @@ data class UpdateUserRequest(
     val dateOfBirth: String?,
     val height: Float?,
     val weight: Float?,
-    val targetWeight: Float?,
-    val avatar: String?
+    val targetWeight: Float?
 )
