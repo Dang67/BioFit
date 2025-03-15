@@ -177,7 +177,7 @@ fun PaymentMethodItem(
 
             // Icon mũi tên
             Icon(
-                painter = painterResource(id = R.drawable.right_arrow), // Thay thế bằng icon mũi tên phù hợp
+                painter = painterResource(id = R.drawable.right_arrow), 
                 contentDescription = "Select",
                 tint = Color.Gray,
                 modifier = Modifier.size(15.dp)
