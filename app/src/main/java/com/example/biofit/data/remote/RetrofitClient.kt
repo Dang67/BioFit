@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "http://172.16.72.238:8080/"
+    private const val BASE_URL = "http://192.168.100.33:8080/"
 
     // Tạo OkHttpClient để có thể thiết lập timeout
     private val client = OkHttpClient.Builder()

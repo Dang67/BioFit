@@ -64,6 +64,7 @@
     <string name="account">Account</string>
     <string name="delete_data">Delete data</string>
     <string name="delete_account">Delete account</string>
+    <string name="upgrade_now">Upgrade now</string>
     <string name="sign_out">SIGN OUT</string>
     <string name="calo_day">calo / day</string>
     <string name="calo_week">calo / week</string>
@@ -301,4 +302,5 @@
     <string name="well_done">Well done!</string>
     <string name="invalid_water">Invalid water</string>
     <string name="default_web_client_id">323575301650-43ps3cb5hnmcr8qnlkj3rs0ak8umi4k2.apps.googleusercontent.com</string>
+    <string name="title_activity_payment">PaymentActivity</string>
 </resources>

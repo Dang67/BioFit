@@ -16,6 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BioFit"
         tools:targetApi="tiramisu"
+        tools:replace="android:theme"
         android:localeConfig="@xml/locales_config"
         android:usesCleartextTraffic="true">
         <activity
@@ -60,6 +61,7 @@
         <activity android:name=".ui.activity.CreateFoodActivity" />
         <activity android:name=".ui.activity.FoodDetailActivity" />
         <activity android:name=".ui.activity.MealsDetailActivity" />
+        <activity android:name=".ui.activity.UpgradeActivity" />
     </application>
 
 </manifest>

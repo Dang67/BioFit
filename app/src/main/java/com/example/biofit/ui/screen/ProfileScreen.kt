@@ -56,6 +56,7 @@ import com.example.biofit.navigation.OverviewActivity
 import com.example.biofit.ui.activity.LoginActivity
 import com.example.biofit.ui.activity.SettingActivity
 import com.example.biofit.ui.activity.TargetActivity
+import com.example.biofit.ui.activity.UpgradeActivity
 import com.example.biofit.ui.components.DefaultDialog
 import com.example.biofit.ui.components.MainCard
 import com.example.biofit.ui.components.getStandardPadding
@@ -538,6 +539,50 @@ fun ProfileContent(
                             onDismissRequest = { showDeleteAccountDialog = false },
                             standardPadding = standardPadding
                         )
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.background)
+
+                    Column(
+                        modifier = Modifier.clickable {
+                            activity?.let {
+                                val intent = Intent(it, UpgradeActivity::class.java).apply {
+                                    putExtra("source","ProfileScreen")
+                                }
+                                it.startActivity(intent)
+                            }
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    vertical = standardPadding,
+                                    horizontal = standardPadding * 2
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_backup_24),
+                                contentDescription = stringResource(R.string.upgrade_now),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+
+                            Text(
+                                text = stringResource(R.string.upgrade_now),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = standardPadding),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Arrow right icon",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
             }
