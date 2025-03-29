@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +47,7 @@ import com.example.biofit.data.utils.UserSharedPrefsHelper
 import com.example.biofit.navigation.MainActivity
 import com.example.biofit.ui.theme.BioFitTheme
 import com.example.biofit.view_model.PaymentViewModel
+import kotlinx.coroutines.delay
 
 
 class PaymentWebViewActivity : ComponentActivity() {
@@ -74,6 +77,10 @@ class PaymentWebViewActivity : ComponentActivity() {
             // Kiểm tra trạng thái đăng ký nếu thanh toán thành công
             if (responseCode == "00" && userId > 0) {
                 viewModel.checkSubscriptionStatus(userId, this)
+                UserSharedPrefsHelper.setPremiumStatus(this, true)
+
+                // Lưu trạng thái để hiển thị dialog trong MainActivity
+                UserSharedPrefsHelper.setShowCongratulationsDialog(this, true)
             }
 
             setContent {
@@ -93,6 +100,7 @@ class PaymentWebViewActivity : ComponentActivity() {
                             }
                             startActivity(intent)
                             finish()
+
                         }
                     )
                 }
@@ -117,11 +125,25 @@ fun PaymentResultScreen(
     val success = responseCode == "00"
     val animatedProgress = remember { Animatable(0f) }
 
+// Cách 1: Sử dụng Int trong mutableStateOf
+    val countdownState = remember { mutableStateOf(3) }
+    val countdown = countdownState.value
+
+    // Tự động đếm ngược và chuyển về trang chính
     LaunchedEffect(Unit) {
         animatedProgress.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
         )
+
+        // Bắt đầu đếm ngược
+        for (i in 3 downTo 1) {
+            countdownState.value = i
+            delay(1000) // Chờ 1 giây
+        }
+        countdownState.value = 0
+        delay(200) // Chờ thêm 200ms để người dùng thấy số 0
+        onClose()
     }
 
     Box(
@@ -217,7 +239,7 @@ fun PaymentResultScreen(
                     onClick = onClose,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (success)
                             MaterialTheme.colorScheme.primary
@@ -230,10 +252,41 @@ fun PaymentResultScreen(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.return_to_home),
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                    // Sử dụng Box và Row để sắp xếp text và hình tròn đếm ngược
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.return_to_home),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
+                            Spacer(modifier = Modifier.size(12.dp))
+
+                            // Hình tròn chứa số đếm ngược
+                            Box(
+                                modifier = Modifier
+                                    .size(4.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = countdown.toString(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -276,3 +329,4 @@ fun AnimatedIcon(success: Boolean) {
         )
     }
 }
+

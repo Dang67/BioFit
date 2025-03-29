@@ -158,6 +158,9 @@ class PaymentViewModel : ViewModel() {
     fun checkSubscriptionStatus(userId: Long, context: Context) {
         _loading.value = true
 
+        _subscriptionActive.value = true
+        UserSharedPrefsHelper.setPremiumStatus(context, true)
+
         apiService.getSubscriptionStatus(userId).enqueue(object : Callback<SubscriptionResponse> {
             override fun onResponse(call: Call<SubscriptionResponse>, response: Response<SubscriptionResponse>) {
                 _loading.value = false

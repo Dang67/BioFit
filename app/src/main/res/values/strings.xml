@@ -15,6 +15,8 @@
     <string name="sign_in_uppercase">SIGN IN</string>
     <string name="don_t_have_an_account">Don\'t have an account?</string>
     <string name="create_account">Create account</string>
+    <string name="have_an_account">Already have an account?</string>
+    <string name="login_account">Login</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="sign_in_with_facebook">Sign in with Facebook</string>
     <string name="term_of_use">Term of Use</string>
@@ -344,4 +346,7 @@
     <string name="congratulations">Payment unsuccessful. Please check your payment method or contact support.</string>
     <string name="processing">Your transaction is processing. Premium features will be activated shortly.</string>
     <string name="unsuccess">Payment unsuccessful. Please check your payment method or contact support.</string>
+    <string name="congratulations_dialog">Congratulations!</string>
+    <string name="content_dialog">You have successfully registered! Please log in again for the best experience.</string>
+    <string name="loginnow_dialog">Login Now</string>
 </resources>

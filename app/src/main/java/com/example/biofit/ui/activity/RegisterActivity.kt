@@ -1,5 +1,7 @@
 package com.example.biofit.ui.activity
 
+import android.app.Activity
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.Toast
@@ -9,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -27,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -293,10 +297,40 @@ fun RegisterForm(
             }
         }
 
+        SignInPrompt()
         SocialLoginButtons(
             standardPadding,
             modifier2
         )
+    }
+}
+
+@Composable
+fun SignInPrompt() {
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.have_an_account),
+            style = MaterialTheme.typography.bodySmall
+        )
+        TextButton(
+            onClick = {
+                activity?.let {
+                    val intent = Intent(it, LoginActivity::class.java)
+                    it.startActivity(intent)
+                    it.finish()
+                }
+            },
+        ) {
+            Text(
+                text = stringResource(R.string.login_account),
+                color = MaterialTheme.colorScheme.inversePrimary
+            )
+        }
     }
 }
 

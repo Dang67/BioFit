@@ -15,6 +15,8 @@
     <string name="sign_in_uppercase">ĐĂNG NHẬP</string>
     <string name="don_t_have_an_account">Bạn chưa có tài khoản?</string>
     <string name="create_account">Tạo tài khoản</string>
+    <string name="have_an_account">Bạn đã có tài khoản?</string>
+    <string name="login_account">Đăng nhập</string>
     <string name="sign_in_with_google">Đăng nhập bằng Google</string>
     <string name="sign_in_with_facebook">Đăng nhập bằng Facebook</string>
     <string name="term_of_use">Điều khoản sử dụng</string>
@@ -342,4 +344,7 @@
     <string name="congratulations">Xin chúc mừng! Các tính năng cao cấp của bạn hiện đã được kích hoạt. Tận hưởng quyền truy cập không giới hạn vào các tính năng nâng cao của BioFit.</string>
     <string name="processing">Giao dịch của bạn đang được xử lý. Các tính năng cao cấp sẽ sớm được kích hoạt.</string>
     <string name="unsuccess">Thanh toán không thành công. Vui lòng kiểm tra phương thức thanh toán của bạn hoặc liên hệ với bộ phận hỗ trợ.</string>
+    <string name="congratulations_dialog">Tuyệt vời!</string>
+    <string name="content_dialog">Bạn đã đăng ký thành công! Vui lòng đăng nhập lại để có trải nghiệm tốt nhất.</string>
+    <string name="loginnow_dialog">Đăng nhập ngay</string>
 </resources>

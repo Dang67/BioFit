@@ -7,6 +7,7 @@ import com.example.biofit.data.remote.RetrofitClient
 import kotlinx.coroutines.launch
 
 class SubscriptionViewModel : ViewModel(){
+
     fun checkSubscriptionStatus(userId: Long, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {

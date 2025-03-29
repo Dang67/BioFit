@@ -9,6 +9,7 @@ object UserSharedPrefsHelper {
     private const val PREF_NAME = "UserPrefs"
     private const val USER_KEY = "USER_DATA"
     private const val KEY_IS_PREMIUM = "is_premium"
+    private const val KEY_SHOW_CONGRATS_DIALOG = "show_congrats_dialog"
 
     fun getUserData(context: Context): UserDTO? {
         val sharedPreferences: SharedPreferences =
@@ -29,6 +30,24 @@ object UserSharedPrefsHelper {
     }
 
     fun setPremiumStatus(context: Context, isPremium: Boolean) {
-        getPrefs(context).edit().putBoolean(KEY_IS_PREMIUM, isPremium).apply()
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_IS_PREMIUM, isPremium)
+            .apply()
+    }
+
+    fun setShowCongratulationsDialog(context: Context, show: Boolean) {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean(KEY_SHOW_CONGRATS_DIALOG, show).apply()
+    }
+
+    fun shouldShowCongratulationsDialog(context: Context): Boolean {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean(KEY_SHOW_CONGRATS_DIALOG, false)
+    }
+
+    fun clearShowCongratulationsDialog(context: Context) {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean(KEY_SHOW_CONGRATS_DIALOG, false).apply()
     }
 }

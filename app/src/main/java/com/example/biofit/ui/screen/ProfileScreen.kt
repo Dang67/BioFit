@@ -14,6 +14,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
@@ -134,6 +136,7 @@ fun ProfileContent(
     var showAvatarDialog by rememberSaveable { mutableStateOf(false) }
     val viewModel: UpdateUserViewModel = viewModel()
 
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview(),
         onResult = { bitmap ->
@@ -227,22 +230,27 @@ fun ProfileContent(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-//                        Text(
-//                            text = if (paymentData.success) "PRO" else "BASIC",
-//                            color = if (paymentData.success)
-//                                MaterialTheme.colorScheme.primary
-//                            else MaterialTheme.colorScheme.secondary,
-//                            style = MaterialTheme.typography.labelSmall,
-//                            modifier = Modifier
-//                                .align(Alignment.CenterVertically)
-//                                .background(
-//                                    color = if (paymentData.success)
-//                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-//                                    else MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
-//                                    shape = RoundedCornerShape(4.dp)
-//                                )
-//                                .padding(horizontal = 6.dp, vertical = 2.dp)
-//                        )
+                        // cập nhật pro sau khi thanh toán thành công
+                        Text(
+                            text = userData.getSubscriptionStatus(context),
+                            color = if (userData.getSubscriptionStatus(context) == "PRO")
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.secondary,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .background(
+                                    color = if (userData.getSubscriptionStatus(context) == "PRO")
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                    else
+                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+
+
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
