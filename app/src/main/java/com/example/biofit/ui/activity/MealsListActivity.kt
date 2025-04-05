@@ -153,6 +153,8 @@ fun MealsListContent(
             ) {
                 Box {
                     FoodItem(
+                        foodId = foodList[index].foodId,
+                        session = foodList[index].session,
                         foodImg = foodList[index].foodImage,
                         foodName = foodList[index].foodName,
                         servingSize = foodList[index].servingSize,
@@ -255,6 +257,8 @@ fun MealsListContent(
 
 
 data class FoodInfo(
+    val foodId: Long,
+    val session: String,
     val foodImage: Int,
     val foodName: String,
     val servingSize: Pair<Float, String>,
@@ -268,6 +272,8 @@ data class FoodInfo(
 
 //Dữ liệu giả
 val food1 = FoodInfo(
+    foodId = 1,
+    session = "Morning",
     foodImage = R.drawable.img_food_default,
     foodName = "Pizza",
     servingSize = Pair(1f, "slice"),
@@ -280,6 +286,8 @@ val food1 = FoodInfo(
 )
 
 val food2 = FoodInfo(
+    foodId = 2,
+    session = "Morning",
     foodImage = R.drawable.img_food_default,
     foodName = "Hamburger",
     servingSize = Pair(1f, "sandwich"),
@@ -292,6 +300,8 @@ val food2 = FoodInfo(
 )
 
 val food3 = FoodInfo(
+    foodId = 3,
+    session = "Afternoon",
     foodImage = R.drawable.img_food_default,
     foodName = "Beefsteaks",
     servingSize = Pair(1f, "steak"),

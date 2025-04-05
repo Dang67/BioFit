@@ -4,10 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,6 +54,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biofit.R
+import com.example.biofit.data.model.dto.FoodInfoDTO
+import com.example.biofit.data.utils.UserSharedPrefsHelper
 import com.example.biofit.ui.components.FoodItem
 import com.example.biofit.ui.components.TopBar
 import com.example.biofit.ui.components.getStandardPadding
@@ -61,13 +65,19 @@ import com.patrykandpatrick.vico.core.extension.sumOf
 import java.math.RoundingMode
 
 class TrackActivity : ComponentActivity() {
+    private val foodViewModel: FoodViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val userId = UserSharedPrefsHelper.getUserData(this)?.userId ?: 0L
+        foodViewModel.fetchFood(userId)
         enableEdgeToEdge()
+        val foodId = intent.getLongExtra("FOOD_ID", -1L)
+        Log.d("FoodDetailActivity", "Received foodId: $foodId")
         val initialSelectedOption = intent.getIntExtra("SESSION_TITLE", R.string.morning)
+
         setContent {
             BioFitTheme {
-                TrackScreen(initialSelectedOption = initialSelectedOption)
+                TrackScreen(initialSelectedOption = initialSelectedOption, foodId = foodId)
             }
         }
     }
@@ -80,7 +90,9 @@ class TrackActivity : ComponentActivity() {
 
 @Composable
 fun TrackScreen(
+    foodId: Long,
     initialSelectedOption: Int,
+    foodViewModel: FoodViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -89,8 +101,19 @@ fun TrackScreen(
     val standardPadding = getStandardPadding().first
     val modifier = getStandardPadding().second
 
+    // Lấy danh sách thực phẩm từ ViewModel
+    val foodList by foodViewModel.foodList.collectAsState()
+
+    // Tìm thực phẩm có foodId tương ứng
+    val selectedFoodDTO = foodList.find { it.foodId == foodId }
+
+    // Nếu tìm thấy thực phẩm, chuyển đổi thành FoodInfoDTO
+    val selectedFoodInfoDTO = selectedFoodDTO?.toFoodInfoDTO() ?: FoodInfoDTO.default()
+    // Ghi log kiểm tra thực phẩm tìm được
+    Log.d("FoodDetailScreen", "Selected food: $selectedFoodInfoDTO")
+
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by rememberSaveable { mutableIntStateOf(initialSelectedOption) }
+    var selectedOption by remember { mutableIntStateOf(initialSelectedOption) }
 
     val options = listOf(
         R.string.morning,
@@ -171,7 +194,6 @@ fun TrackScreen(
                 rightButton = null,
                 standardPadding = standardPadding
             )
-
             TrackContent(
                 selectedOption = selectedOption,
                 standardPadding = standardPadding,
@@ -203,7 +225,9 @@ fun TrackContent(
                     selectedOption = selectedOption,
                     standardPadding = standardPadding,
                     modifier = modifier,
+                    food = FoodInfoDTO.default(),
                     foodId = 0
+
                 )
             }
 
@@ -218,7 +242,8 @@ fun TrackContent(
                 MenuForSession(
                     selectedOption = selectedOption,
                     standardPadding = standardPadding,
-                    modifier = modifier
+                    modifier = modifier,
+                    foodId = 0
                 )
             }
         }
@@ -259,54 +284,64 @@ fun TrackContent(
 
 @Composable
 fun NutritionalComposition(
+    foodId: Long,
     selectedOption: Int,
     standardPadding: Dp,
     modifier: Modifier,
-    foodId: Long
+    food: FoodInfoDTO,
+    foodViewModel: FoodViewModel = viewModel()
 ) {
+    val foodListDTO by foodViewModel.foodList.collectAsState()
+    val foodListInfoDTO = foodListDTO.map { it.toFoodInfoDTO() }
+
+    val foodListMorning = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.morning), ignoreCase = true) }
+    val foodListAfternoon = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.afternoon), ignoreCase = true) }
+    val foodListEvening = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.evening), ignoreCase = true) }
+    val foodListSnack = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.snack), ignoreCase = true) }
+
     val morningMacroTable = listOf(
         Triple(
-            food1.protein.first,
-            food1.protein.second,
+            food.protein.first,
+            food.protein.second,
             foodListMorning.sumOf { it.protein.third }),
         Triple(
-            food1.carbohydrate.first,
-            food1.carbohydrate.second,
+            food.carbohydrate.first,
+            food.carbohydrate.second,
             foodListMorning.sumOf { it.carbohydrate.third }),
-        Triple(food1.fat.first, food1.fat.second, foodListMorning.sumOf { it.fat.third })
+        Triple(food.fat.first, food.fat.second, foodListMorning.sumOf { it.fat.third })
     )
 
     val afternoonMacroTable = listOf(
         Triple(
-            food2.protein.first,
-            food2.protein.second,
+            food.protein.first,
+            food.protein.second,
             foodListAfternoon.sumOf { it.protein.third }),
         Triple(
-            food2.carbohydrate.first,
-            food2.carbohydrate.second,
+            food.carbohydrate.first,
+            food.carbohydrate.second,
             foodListAfternoon.sumOf { it.carbohydrate.third }),
-        Triple(food2.fat.first, food2.fat.second, foodListAfternoon.sumOf { it.fat.third })
+        Triple(food.fat.first, food.fat.second, foodListAfternoon.sumOf { it.fat.third })
     )
 
     val eveningMacroTable = listOf(
         Triple(
-            food3.protein.first,
-            food3.protein.second,
+            food.protein.first,
+            food.protein.second,
             foodListEvening.sumOf { it.protein.third }),
         Triple(
-            food3.carbohydrate.first,
-            food3.carbohydrate.second,
+            food.carbohydrate.first,
+            food.carbohydrate.second,
             foodListEvening.sumOf { it.carbohydrate.third }),
-        Triple(food3.fat.first, food3.fat.second, foodListEvening.sumOf { it.fat.third })
+        Triple(food.fat.first, food.fat.second, foodListEvening.sumOf { it.fat.third })
     )
 
     val snackMacroTable = listOf(
-        Triple(food1.protein.first, food1.protein.second, foodListSnack.sumOf { it.protein.third }),
+        Triple(food.protein.first, food.protein.second, foodListSnack.sumOf { it.protein.third }),
         Triple(
-            food1.carbohydrate.first,
-            food1.carbohydrate.second,
+            food.carbohydrate.first,
+            food.carbohydrate.second,
             foodListSnack.sumOf { it.carbohydrate.third }),
-        Triple(food1.fat.first, food1.fat.second, foodListSnack.sumOf { it.fat.third })
+        Triple(food.fat.first, food.fat.second, foodListSnack.sumOf { it.fat.third })
     )
 
     val sessionMacroTable = when (selectedOption) {
@@ -389,15 +424,24 @@ fun NutritionalComposition(
     }
 }
 
-
 @Composable
 fun MenuForSession(
+    foodId: Long,
     selectedOption: Int,
     standardPadding: Dp,
-    modifier: Modifier
+    modifier: Modifier,
+    foodViewModel: FoodViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
+
+    val foodListDTO by foodViewModel.foodList.collectAsState()
+    val foodListInfoDTO = foodListDTO.map { it.toFoodInfoDTO() }
+
+    val foodListMorning = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.morning), ignoreCase = true) }
+    val foodListAfternoon = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.afternoon), ignoreCase = true) }
+    val foodListEvening = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.evening), ignoreCase = true) }
+    val foodListSnack = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.snack), ignoreCase = true) }
 
     val meal = when (selectedOption) {
         R.string.morning -> R.string.breakfast
@@ -426,6 +470,8 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
+                                foodId = foodListMorning[index].foodId,
+                                session = foodListMorning[index].session,
                                 foodImg = foodListMorning[index].foodImage,
                                 foodName = foodListMorning[index].foodName,
                                 servingSize = Pair(
@@ -530,6 +576,8 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
+                                foodId = foodListAfternoon[index].foodId,
+                                session = foodListAfternoon[index].session,
                                 foodImg = foodListAfternoon[index].foodImage,
                                 foodName = foodListAfternoon[index].foodName,
                                 servingSize = Pair(
@@ -634,6 +682,8 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
+                                foodId = foodListEvening[index].foodId,
+                                session = foodListEvening[index].session,
                                 foodImg = foodListEvening[index].foodImage,
                                 foodName = foodListEvening[index].foodName,
                                 servingSize = Pair(
@@ -738,6 +788,8 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
+                                foodId = foodListSnack[index].foodId,
+                                session = foodListSnack[index].session,
                                 foodImg = foodListSnack[index].foodImage,
                                 foodName = foodListSnack[index].foodName,
                                 servingSize = Pair(
@@ -850,7 +902,7 @@ fun MenuForSession(
 @Composable
 private fun TrackScreenDarkModePreviewInSmallPhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning)
+        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
     }
 }
 
@@ -863,7 +915,7 @@ private fun TrackScreenDarkModePreviewInSmallPhone() {
 @Composable
 private fun TrackScreenPreviewInLargePhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning)
+        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
     }
 }
 
@@ -877,7 +929,7 @@ private fun TrackScreenPreviewInLargePhone() {
 @Composable
 private fun TrackScreenPreviewInTablet() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning)
+        TrackScreen(initialSelectedOption = R.string.morning,foodId = 0)
     }
 }
 
@@ -891,7 +943,7 @@ private fun TrackScreenPreviewInTablet() {
 @Composable
 private fun TrackScreenLandscapeDarkModePreviewInSmallPhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning)
+        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
     }
 }
 
@@ -904,7 +956,7 @@ private fun TrackScreenLandscapeDarkModePreviewInSmallPhone() {
 @Composable
 private fun TrackScreenLandscapePreviewInLargePhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning)
+        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
     }
 }
 
@@ -918,6 +970,6 @@ private fun TrackScreenLandscapePreviewInLargePhone() {
 @Composable
 private fun TrackScreenLandscapePreviewInTablet() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning)
+        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
     }
 }

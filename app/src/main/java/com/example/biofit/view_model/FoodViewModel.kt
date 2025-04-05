@@ -51,8 +51,6 @@ class FoodViewModel : ViewModel() {
         })
     }
 
-
-
     private val _foodListCreate = MutableStateFlow<List<FoodDTO>>(emptyList())
     val foodListCreate: StateFlow<List<FoodDTO>> = _foodListCreate.asStateFlow()
 

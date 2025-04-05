@@ -342,6 +342,8 @@ fun AddContent(
 
                                     Box {
                                         FoodItem(
+                                            foodId = foodListRecent[index].foodId,
+                                            session = foodListRecent[index].session,
                                             foodImg = foodListRecent[index].foodImage,
                                             foodName = foodListRecent[index].foodName,
                                             servingSize = Pair(
@@ -372,9 +374,16 @@ fun AddContent(
                                                     it.startActivity(intent)
                                                 }
                                             },
+                                            onEatClick = { foodId, session ->  // Truyền foodId và session vào đây
+                                                activity?.let {
+                                                    val intent = Intent(it, TrackActivity::class.java)
+                                                    intent.putExtra("FOOD_ID", foodId)
+                                                    intent.putExtra("SESSION", session)
+                                                    it.startActivity(intent)
+                                                }
+                                            },
                                             onLongClick = { expanded = true },
-                                            onEatClick = { TODO() },
-                                            standardPadding = standardPadding
+                                            standardPadding = standardPadding,
                                         )
 
                                         DropdownMenu(
@@ -449,7 +458,6 @@ fun AddContent(
                             selectedOption = selectedOption
                         )
                     }
-
                 else ->
                     when (foodListCreate.isNotEmpty()) {
                         true ->
@@ -462,6 +470,8 @@ fun AddContent(
 
                                     Box {
                                         FoodItem(
+                                            foodId = foodListCreate[index].foodId,
+                                            session = foodListCreate[index].session,
                                             foodImg = foodListCreate[index].foodImage,
                                             foodName = foodListCreate[index].foodName,
                                             servingSize = Pair(
@@ -493,7 +503,14 @@ fun AddContent(
                                                     it.startActivity(intent)
                                                 }
                                             },
-                                            onEatClick = { TODO() },
+                                            onEatClick = { foodId, session ->  // Truyền foodId và session vào đây
+                                                activity?.let {
+                                                    val intent = Intent(it, TrackActivity::class.java)
+                                                    intent.putExtra("FOOD_ID", foodId)
+                                                    intent.putExtra("SESSION", session)
+                                                    it.startActivity(intent)
+                                                }
+                                            },
                                             onLongClick = { expanded = true },
                                             standardPadding = standardPadding
                                         )

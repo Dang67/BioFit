@@ -1,6 +1,7 @@
 package com.example.biofit.ui.components
 
 import android.content.res.Configuration
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -41,6 +42,8 @@ fun FoodItemScreen() {
         color = MaterialTheme.colorScheme.background,
     ) {
         FoodItem(
+            foodId = 1, // Truyền foodId giả
+            session = "Lunch", // Truyền session giả
             foodImg = R.drawable.img_food_default,
             foodName = stringResource(R.string.food_name),
             servingSize = Pair(1f, "sandwich"),
@@ -53,6 +56,9 @@ fun FoodItemScreen() {
             ),
             onClick = {},
             onLongClick = {},
+            onEatClick = { foodId, session ->
+                Log.d("FoodItem", "Ate foodId: $foodId in session: $session")
+            },
             standardPadding = getStandardPadding().first
         )
     }
@@ -61,6 +67,8 @@ fun FoodItemScreen() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FoodItem(
+    foodId: Long,
+    session: String,
     foodImg: Int,
     foodName: String,
     servingSize: Pair<Float, String>,
@@ -69,7 +77,7 @@ fun FoodItem(
     macros: List<Pair<Int, Float>>,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onEatClick: (() -> Unit)? = null,
+    onEatClick: ((Long, String) -> Unit)? = null,
     standardPadding: Dp
 ) {
     val context = LocalContext.current
@@ -150,7 +158,7 @@ fun FoodItem(
         if (onEatClick != null) {
             IconButton(
                 onClick = {
-                    onEatClick()
+                    onEatClick(foodId, session)
                     Toast.makeText(
                         context,
                         context.getString(R.string.ate_this_food),
