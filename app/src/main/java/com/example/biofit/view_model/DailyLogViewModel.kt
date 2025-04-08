@@ -5,6 +5,8 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.ViewModel
 import com.example.biofit.R
 import com.example.biofit.data.model.dto.DailyLogDTO
@@ -306,12 +308,16 @@ class DailyLogViewModel : ViewModel() {
                     val weightHistory = response.body()
                     if (weightHistory != null) {
 
-                        val formatterDay = DateTimeFormatter.ofPattern("dd")
-                        val formatterMonth = DateTimeFormatter.ofPattern("MM")
+                        val formatterDay = DateTimeFormatter.ofPattern("d")
+                        val formatterMonth = DateTimeFormatter.ofPattern("M")
 
                         val weightData = weightHistory.map { weight ->
                             val localDate = LocalDate.parse(weight.date)
-                            "${localDate.format(formatterDay)}/${localDate.format(formatterMonth)}" to weight.weight
+                            if (Locale.current.language == "vi") {
+                                "${localDate.format(formatterDay)}/${localDate.format(formatterMonth)}" to weight.weight
+                            } else {
+                                "${localDate.format(formatterMonth)}/${localDate.format(formatterDay)}" to weight.weight
+                            }
                         }
 
                         mainHandler.post {

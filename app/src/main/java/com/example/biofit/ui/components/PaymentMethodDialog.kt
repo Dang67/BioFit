@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +35,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -74,8 +76,16 @@ fun PaymentMethodDialog(
     val paymentUrl = viewModel.paymentUrl.observeAsState()
     val loading = viewModel.loading.observeAsState(false)
     val error = viewModel.error.observeAsState()
+    var success = viewModel.success.observeAsState()
 
     // Xử lí lỗi
+    LaunchedEffect(success.value) {
+        success.value?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // xử lí thành công
     LaunchedEffect(error.value) {
         error.value?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
@@ -108,7 +118,7 @@ fun PaymentMethodDialog(
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         tonalElevation = 0.dp
     ) {
         Column(
@@ -118,10 +128,9 @@ fun PaymentMethodDialog(
         ) {
             Text(
                 text = stringResource(R.string.payment_method),
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
@@ -168,21 +177,19 @@ fun PaymentMethodDialog(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Nút close
-            Button(
+            ElevatedButton(
                 onClick = { onDismiss() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50),
+                    containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White
                 )
             ) {
                 Text(
                     stringResource(R.string.close),
-                    style = TextStyle(
-                        fontSize = 16.sp,
+                    style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -204,14 +211,14 @@ fun PaymentMethodItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(MaterialTheme.shapes.large)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
-                ambientColor = Color.Gray,
-                spotColor = Color.DarkGray
+                shape = MaterialTheme.shapes.large,
+                ambientColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                spotColor = MaterialTheme.colorScheme.surfaceContainerHighest
             )
-            .background(Color(0xFFF6F6F6))
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
@@ -233,10 +240,9 @@ fun PaymentMethodItem(
             // Tên phương thức thanh toán
             Text(
                 text = name,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
                 )
             )
 
@@ -244,10 +250,12 @@ fun PaymentMethodItem(
 
             // Icon mũi tên
             Icon(
-                painter = painterResource(id = R.drawable.right_arrow),
+                painter = painterResource(id = R.drawable.ic_back),
                 contentDescription = "Select",
-                tint = Color.Gray,
-                modifier = Modifier.size(15.dp)
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier
+                    .size(15.dp)
+                    .rotate(180f)
             )
         }
     }

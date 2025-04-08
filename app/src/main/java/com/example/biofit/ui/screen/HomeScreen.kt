@@ -48,6 +48,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,9 +69,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -84,6 +88,7 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
@@ -111,24 +116,54 @@ import com.example.biofit.ui.components.getStandardPadding
 import com.example.biofit.ui.theme.BioFitTheme
 import com.example.biofit.view_model.DailyLogViewModel
 import com.example.biofit.view_model.ExerciseViewModel
+import com.patrykandpatrick.vico.compose.axis.axisGuidelineComponent
+import com.patrykandpatrick.vico.compose.axis.axisLabelComponent
+import com.patrykandpatrick.vico.compose.axis.axisLineComponent
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.axis.horizontal.rememberTopAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberEndAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollState
 import com.patrykandpatrick.vico.compose.component.lineComponent
+import com.patrykandpatrick.vico.compose.component.shape.shader.fromBrush
+import com.patrykandpatrick.vico.compose.component.shape.shader.fromComponent
 import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
+import com.patrykandpatrick.vico.compose.style.currentChartStyle
+import com.patrykandpatrick.vico.core.DefaultDimens
+import com.patrykandpatrick.vico.core.axis.Axis
+import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
+import com.patrykandpatrick.vico.core.axis.AxisPosition
+import com.patrykandpatrick.vico.core.axis.AxisRenderer
+import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
+import com.patrykandpatrick.vico.core.chart.decoration.Decoration
 import com.patrykandpatrick.vico.core.chart.line.LineChart
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.marker.MarkerComponent
+import com.patrykandpatrick.vico.core.component.shape.DashedShape
+import com.patrykandpatrick.vico.core.component.shape.LineComponent
+import com.patrykandpatrick.vico.core.component.shape.ShapeComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShader
+import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
+import com.patrykandpatrick.vico.core.component.text.TextComponent
+import com.patrykandpatrick.vico.core.component.text.VerticalPosition
+import com.patrykandpatrick.vico.core.dimensions.Dimensions
+import com.patrykandpatrick.vico.core.dimensions.MutableDimensions
+import com.patrykandpatrick.vico.core.dimensions.emptyDimensions
+import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
+import com.patrykandpatrick.vico.core.legend.Legend
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import kotlin.apply
 
 @Composable
 fun HomeScreen(userData: UserDTO) {
@@ -856,6 +891,9 @@ fun DailyGoals(
     var latestWeight = DailyLogSharedPrefsHelper.getDailyLog(context)?.weight
     var latestWeightState by remember { mutableStateOf(DailyLogSharedPrefsHelper.getDailyLog(context)?.weight) }
     val today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+    val formatterToday = LocalDate.now().format(DateTimeFormatter.ofPattern(
+        if (Locale.current.language == "vi") "dd-MM-yyyy" else "yyyy-MM-dd"
+    ))
     val weightDataState by dailyLogViewModel.weightDataState
     LaunchedEffect(userData.userId) {
         dailyLogViewModel.getWeightHistory(userData.userId)
@@ -1201,8 +1239,8 @@ fun DailyGoals(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "$latestWeight" + stringResource(R.string.kg) +
-                                        " | $today",
+                                text = "$latestWeight " + stringResource(R.string.kg) +
+                                        " | $formatterToday",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -1257,9 +1295,9 @@ fun DailyGoals(
                         )
                     }
                 }
-
-                WeightLineChart(weightDataState)
             }
+
+            WeightLineChart(weightDataState)
         }
 
         SubCard(modifier = modifier) {
@@ -1396,7 +1434,7 @@ fun DailyGoals(
                                 painter = painterResource(R.drawable.checkmark_circle_fill),
                                 contentDescription = "Check Circle Icon",
                                 modifier = Modifier.size(standardPadding * 1.5f),
-                                tint = MaterialTheme.colorScheme.inversePrimary,
+                                tint = Color(0xFF64DD17),
                             )
 
                             Text(
@@ -1587,6 +1625,10 @@ fun ExerciseChart(
 
 @Composable
 fun WeightLineChart(weightData: List<Pair<String, Float>>) {
+    if (weightData.isEmpty()) return
+    val minWeight = weightData.minOfOrNull { it.second } ?: 0f
+    val maxWeight = weightData.maxOfOrNull { it.second } ?: 0f
+
     val chartEntryModel = remember(weightData) {
         ChartEntryModelProducer(
             weightData.mapIndexed { index, data ->
@@ -1598,14 +1640,39 @@ fun WeightLineChart(weightData: List<Pair<String, Float>>) {
     val lineChart = lineChart(
         lines = listOf(
             LineChart.LineSpec(
-                lineColor = 0xFF34A853.toInt(),
-                lineThicknessDp = 3f,
+                lineColor = MaterialTheme.colorScheme.secondary.toArgb(),
+                lineBackgroundShader = DynamicShaders.fromBrush(
+                    Brush.verticalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                            Color.Transparent
+                        )
+                    )
+                ),
+                lineThicknessDp = 2f,
+                lineCap = Paint.Cap.ROUND,
+                dataLabel = textComponent(
+                    color = MaterialTheme.colorScheme.inversePrimary,
+                    background = ShapeComponent(
+                        shape = Shapes.pillShape,
+                        color = Color.Transparent.toArgb()
+                    )
+                ),
+                dataLabelVerticalPosition = VerticalPosition.Top,
+                point = ShapeComponent(
+                    shape = Shapes.pillShape,
+                    color = MaterialTheme.colorScheme.inversePrimary.toArgb()
+                ),
+                pointSizeDp = 8f,
             )
+        ),
+        axisValuesOverrider = AxisValuesOverrider.fixed(
+            minY = minWeight - (maxWeight - minWeight),
+            maxY = maxWeight + (maxWeight - minWeight)
         )
     )
 
-    val marker = rememberMarkerComponent()
-
+    /*val marker = rememberMarkerComponent()*/
     val chartScrollState = rememberChartScrollState()
 
     Column(
@@ -1617,20 +1684,27 @@ fun WeightLineChart(weightData: List<Pair<String, Float>>) {
         Chart(
             chart = lineChart,
             model = chartEntryModel.getModel(),
-            startAxis = rememberStartAxis(
-                label = textComponent(
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            ),
+            /*startAxis = rememberStartAxis(
+                label = null,
+                guideline = null,
+                tick = null
+            ),*/
             bottomAxis = rememberBottomAxis(
-                label = textComponent(
-                    color = MaterialTheme.colorScheme.onSurface,
-                ),
-                valueFormatter = { value, _ ->
-                    weightData.getOrNull(value.toInt())?.first ?: ""
-                }
+                label = axisLabelComponent(color = MaterialTheme.colorScheme.onSurface),
+                valueFormatter = { value, _ -> weightData.getOrNull(value.toInt())?.first ?: "" },
+                guideline = null
             ),
-            marker = marker,
+            /*topAxis = rememberTopAxis(
+                label = null,
+                guideline = null,
+                tick = null,
+            ),
+            endAxis = rememberEndAxis(
+                label = null,
+                guideline = null,
+                tick = null
+            ),*/
+            /*marker = marker,*/
             isZoomEnabled = true,
             chartScrollState = chartScrollState
         )

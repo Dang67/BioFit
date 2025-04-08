@@ -250,7 +250,7 @@ fun LoginForm(
                 )
             },
             isError = emailError != null,
-            supportingText = { emailError?.let { Text(stringResource(it)) } },
+            supportingText = emailError?.let { { Text(stringResource(it)) } },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next

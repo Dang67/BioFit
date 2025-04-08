@@ -3,6 +3,7 @@ package com.example.biofit.ui.activity
 import android.app.Activity
 import android.content.res.Configuration
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -124,6 +125,11 @@ fun CreateExerciseScreen(
                                 )
                             )
                             exerciseViewModel.createExercise(exerciseDTO)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.exercise_created_successfully),
+                                Toast.LENGTH_SHORT
+                            ).show()
                             activity?.finish()
                         }
                     ) {

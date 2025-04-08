@@ -48,7 +48,7 @@ interface ApiService {
 
     /*
     ------------------------------------------------------------------------------------------------
-*/
+    */
     // Daily Log API
     @GET("api/daily-log/user/{userId}/latest")
     fun getLatestDailyLog(
@@ -62,7 +62,7 @@ interface ApiService {
     fun getWeightHistory(@Path("userId") userId: Long): Call<List<DailyLogDTO>>
 
     /*
-    ----------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------
     */
     // Exercise API
     @GET("api/exercise/user/{userId}")
@@ -86,20 +86,12 @@ interface ApiService {
         @Path("exerciseId") exerciseId: Long,
         @Body exercise: ExerciseDTO
     ): Call<Void>
-
     /*
-    ----------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------
     */
     // Exercise Done API
     @POST("api/exercise-done/create")
     fun createExerciseDone(@Body exerciseDoneDTO: ExerciseDoneDTO): Call<ExerciseDoneDTO>
-
-    /*@GET("api/exercise-done/user/{userId}")
-    fun getExerciseDone(
-        @Path("userId") userId: Long,
-        @Query("startDate") startDate: String,
-        @Query("endDate") endDate: String
-    ): Call<List<ExerciseDoneDTO>>*/
 
     @GET("api/exercise-done/overview")
     fun getOverviewExercises(
@@ -118,9 +110,13 @@ interface ApiService {
         @Query("userId") userId: Long
     ): Call<Float>
 
+    /*
+    --------------------------------------------------------------------------------------------
+    */
+
     // Google API
-//    @POST("api/auth/google")
-//    suspend fun googleSignIn(@Body request: GoogleAuthDTO): Response<SocialAccountDTO>
+    //    @POST("api/auth/google")
+    //    suspend fun googleSignIn(@Body request: GoogleAuthDTO): Response<SocialAccountDTO>
 
     @POST("api/payment/create-payment")
     fun createPayment(@Body request: PaymentRequest): Call<PaymentResponse>
@@ -131,6 +127,13 @@ interface ApiService {
     @GET("subscription/status_sub/{userId}")
     suspend fun checkSubscription(@Path("userId") userId: Long): Boolean
 
+    @GET("/api/subscription/latest/{userId}")
+    fun getLatestSubscription(@Path("userId") userId: Long): Call<SubscriptionResponse>
+
+    /*
+    ------------------------------------------------------------------------------------------------
+    */
+
     // reset password API
     @POST("api/user/forgot-password")
     suspend fun requestPasswordReset(@Body request: PasswordResetRequest): Response<PasswordResetResponse>
@@ -139,8 +142,8 @@ interface ApiService {
     suspend fun resetPassword(@Body request: PasswordResetDTO): Response<PasswordResetResponse>
 
     /*
-        ----------------------------------------------------------------------------------------------------
-        */
+    ------------------------------------------------------------------------------------------------
+    */
     // API Food
 
     @GET("api/food/user/{userId}")

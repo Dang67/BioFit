@@ -2,6 +2,7 @@ package com.example.biofit.view_model
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -33,6 +34,9 @@ class PaymentViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
+    private val _success = MutableLiveData<String>()
+    val success: LiveData<String> = _success
+
     private val _subscriptionActive = MutableLiveData<Boolean>()
     val subscriptionActive: LiveData<Boolean> = _subscriptionActive
 
@@ -47,16 +51,17 @@ class PaymentViewModel : ViewModel() {
 
         val backendDomain = extractBaseUrl(RetrofitClient.BASE_URL)
         val ipAddress = getIPAddress(true)
-        val request = PaymentRequest(
-            userId = userId,
-            planType = packageCode,
-            paymentMethod = "MOMO",
-            returnUrl = "$backendDomain/api/payment/momo-return",
-            ipAddress = ipAddress,
-            amount = amount
-        )
 
         viewModelScope.launch {
+            val request = PaymentRequest(
+                userId = userId,
+                planType = packageCode,
+                paymentMethod = "MOMO",
+                returnUrl = "$backendDomain/api/payment/momo-return",
+                ipAddress = ipAddress,
+                amount = amount
+            )
+
             apiService.createPayment(request).enqueue(object : Callback<PaymentResponse> {
                 override fun onResponse(call: Call<PaymentResponse>, response: Response<PaymentResponse>) {
                     _loading.value = false
@@ -65,12 +70,27 @@ class PaymentViewModel : ViewModel() {
                         if (paymentResponse.success) {
                             saveOrderId(context, paymentResponse.orderId)
                             _paymentUrl.value = paymentResponse.paymentUrl ?: ""
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentResponse.paymentUrl))
-                            intent.setPackage("com.mservice.momotransfer.sandbox") // Chỉ định ứng dụng MoMo
+
                             try {
+                                // Tạo intent để mở ứng dụng MoMo với URL thanh toán
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentResponse.paymentUrl))
                                 context.startActivity(intent)
+
+                                // Thông báo nếu mở thành công
+                                _success.value = "Đang mở ứng dụng MoMo để thanh toán..."
+                                Log.d("PaymentViewModel", "Mở ứng dụng MoMo thành công")
+
                             } catch (e: Exception) {
-                                _error.value = "ứng dụng MoMo đã được kích hoạt!"
+                                // Thử phương án dự phòng - mở bằng app
+                                _success.value = "Đang chuyển hướng đến trang thanh toán trên web..."
+                                try {
+                                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentResponse.paymentUrl))
+                                    context.startActivity(browserIntent)
+                                } catch (e2: Exception) {
+                                    // Nếu cả hai phương án đều thất bại
+                                    _error.value = "Không thể mở trang thanh toán: ${e2.message}"
+                                    Log.e("PaymentViewModel", "Lỗi khi mở trình thanh toán", e)
+                                }
                             }
                         } else {
                             _error.value = paymentResponse.message

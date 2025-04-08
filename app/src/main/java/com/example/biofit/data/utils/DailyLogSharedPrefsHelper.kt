@@ -7,7 +7,7 @@ import com.example.biofit.data.model.dto.DailyLogDTO
 import com.google.gson.Gson
 
 object DailyLogSharedPrefsHelper {
-    private const val PREF_NAME = "UserPrefs"
+    private const val PREF_NAME = "DailyLogPrefs"
     private const val DAILY_LOG_KEY = "DAILY_LOG"
 
     fun saveDailyLog(context: Context, dailyLog: DailyLogDTO) {

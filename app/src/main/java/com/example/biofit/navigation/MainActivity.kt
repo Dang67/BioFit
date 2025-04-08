@@ -1,5 +1,6 @@
 package com.example.biofit.navigation
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -43,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,12 +53,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.edit
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.biofit.BuildConfig
 import com.example.biofit.R
+import com.example.biofit.data.model.ChatBotModel
+import com.example.biofit.data.model.dto.DailyLogDTO
 import com.example.biofit.data.model.dto.UserDTO
+import com.example.biofit.data.utils.DailyLogSharedPrefsHelper
+import com.example.biofit.data.utils.OverviewExerciseSharedPrefsHelper
 import com.example.biofit.data.utils.UserSharedPrefsHelper
 import com.example.biofit.data.utils.UserSharedPrefsHelper.getUserId
 import com.example.biofit.ui.activity.LoginActivity
@@ -68,7 +76,11 @@ import com.example.biofit.ui.screen.KnowledgeScreen
 import com.example.biofit.ui.screen.PlanningScreen
 import com.example.biofit.ui.screen.ProfileScreen
 import com.example.biofit.ui.theme.BioFitTheme
+import com.example.biofit.view_model.AIChatbotViewModel
+import com.example.biofit.view_model.ExerciseViewModel
 import com.example.biofit.view_model.SubscriptionViewModel
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class MainActivity : ComponentActivity() {
@@ -108,6 +120,7 @@ class MainActivity : ComponentActivity() {
             BioFitTheme {
                 MainScreen(userData ?: UserDTO.default())
 
+                val context = LocalContext.current
                 var showCongratulationsDialog by remember { mutableStateOf(shouldShowDialog) }
 
                 // Hiển thị dialog nếu cần
@@ -120,6 +133,68 @@ class MainActivity : ComponentActivity() {
                         },
                         onLogin = {
                             showCongratulationsDialog = false
+
+                            val apiKey = BuildConfig.GOOGLE_API_KEY
+                            val userData = UserSharedPrefsHelper.getUserData(context)
+                            val dailyWeightData = DailyLogSharedPrefsHelper.getDailyLog(context)
+                            val exerciseViewModel = ExerciseViewModel()
+                            val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            exerciseViewModel.fetchOverviewExercises(
+                                this,
+                                userData?.userId ?: UserDTO.default().userId,
+                                userData?.createdAccount ?: UserDTO.default().createdAccount,
+                                today
+                            )
+                            val overviewExerciseData = OverviewExerciseSharedPrefsHelper.getListOverviewExercise(this)
+                            val mappedExercises = overviewExerciseData?.map { exercise ->
+                                val levelStr = when (exercise.level) {
+                                    0 -> this.getString(R.string.amateur)
+                                    1 -> this.getString(R.string.professional)
+                                    else -> this.getString(R.string.unknown)
+                                }
+
+                                val intensityStr = when (exercise.intensity) {
+                                    0 -> this.getString(R.string.low)
+                                    1 -> this.getString(R.string.medium)
+                                    2 -> this.getString(R.string.high)
+                                    else -> this.getString(R.string.unknown)
+                                }
+
+                                val sessionStr = when (exercise.session) {
+                                    0 -> this.getString(R.string.morning)
+                                    1 -> this.getString(R.string.afternoon)
+                                    2 -> this.getString(R.string.evening)
+                                    else -> this.getString(R.string.unknown)
+                                }
+
+                                "(${this.getString(R.string.exercise)}: ${exercise.exerciseName}, ${this.getString(R.string.level)}: $levelStr, ${this.getString(R.string.intensity)}: $intensityStr, ${this.getString(R.string.time)}: ${exercise.time} ${this.getString(R.string.minutes)}, ${this.getString(R.string.burned_calories)}: ${exercise.burnedCalories} ${this.getString(R.string.kcal)}, ${this.getString(R.string.session)}: $sessionStr, ${this.getString(R.string.day)}: ${exercise.date})"
+                            }
+                            val model = ChatBotModel(
+                                userData = userData ?: UserDTO.default(),
+                                dailyLogData = dailyWeightData ?: DailyLogDTO.default(),
+                                exerciseDone = mappedExercises,
+                                context = context,
+                                apiKey = apiKey,
+                            )
+                            val viewModel = AIChatbotViewModel(model, context)
+                            viewModel.clearChatHistory() // Xóa lịch sử chat
+
+                            val activity = context as? Activity
+                            val userSharedPreferences = activity?.getSharedPreferences("UserPrefs",
+                                MODE_PRIVATE
+                            )
+                            val dailyLogSharedPreferences = activity?.getSharedPreferences("DailyLogPrefs",
+                                MODE_PRIVATE
+                            )
+                            val overviewExerciseSharedPreferences = activity?.getSharedPreferences("OverviewExercisePrefs",
+                                MODE_PRIVATE
+                            )
+
+                            // Xóa dữ liệu đăng nhập (SharedPreferences)
+                            userSharedPreferences?.edit { clear() }
+                            dailyLogSharedPreferences?.edit { clear() }
+                            overviewExerciseSharedPreferences?.edit { clear() }
+
                             // Xóa trạng thái để không hiển thị lại dialog
                             UserSharedPrefsHelper.clearShowCongratulationsDialog(this@MainActivity)
 

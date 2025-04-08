@@ -57,6 +57,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
@@ -191,8 +193,6 @@ fun SettingScreen(
 
             SettingContent(
                 userData = userData,
-                screenWidth,
-                screenHeight,
                 standardPadding,
                 modifier
             )
@@ -203,8 +203,6 @@ fun SettingScreen(
 @Composable
 fun SettingContent(
     userData: UserDTO,
-    screenWidth: Int,
-    screenHeight: Int,
     standardPadding: Dp,
     modifier: Modifier,
     updateViewModel: UpdateUserViewModel = viewModel(),
@@ -232,9 +230,9 @@ fun SettingContent(
     }
     var createdAccount by rememberSaveable { mutableStateOf(userData.createdAccount) }
     Log.d("createdAccount", createdAccount)
-/*
-****************************************************************************************************
-*/
+    /*
+    ****************************************************************************************************
+    */
     // Lấy dữ liệu calo tiêu thụ
     val caloOfDaily = when (userData.gender) {
         0 -> when (userData.getAgeInt(userData.dateOfBirth)) {
@@ -263,13 +261,14 @@ fun SettingContent(
     val caloOfWeeklyTDEE = BigDecimal(caloOfDailyBMR.toDouble() * 1.55)
         .setScale(2, RoundingMode.HALF_UP)
         .toFloat()
-/*
-***************************************************************************************************
-*/
+    /*
+    ***************************************************************************************************
+    */
     // Đặt các trạng thái cho các trường dữ liệu
     val focusManager = LocalFocusManager.current
     var showGenderDialog by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var isEmailVisible by remember { mutableStateOf(false) }
     val interactionSources = remember { List(5) { MutableInteractionSource() } }
     interactionSources.forEach { source ->
         val isPressed by source.collectIsPressedAsState()
@@ -300,9 +299,9 @@ fun SettingContent(
     var showBMRPopup by remember { mutableStateOf(false) }
     var showTDEEPopup by remember { mutableStateOf(false) }
     var showCalorieIntakePopup by remember { mutableStateOf(false) }
-/*
-***************************************************************************************************
-*/
+    /*
+    ***************************************************************************************************
+    */
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(standardPadding * 2)
     ) {
@@ -635,40 +634,6 @@ fun SettingContent(
                 )
 
                 OutlinedTextField(
-                    value = updateViewModel.email.value ?: "",
-                    onValueChange = { updateViewModel.email.value = it },
-                    modifier = modifier.shadow(
-                        elevation = 6.dp,
-                        shape = MaterialTheme.shapes.large
-                    ),
-                    readOnly = true,
-                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.person_crop_square_filled_and_at_rectangle_fill),
-                            contentDescription = stringResource(R.string.email),
-                            modifier = Modifier.size(standardPadding * 1.5f),
-                            tint = Color(0xFF00BFA5)
-                        )
-                    },
-                    prefix = { Text(text = stringResource(R.string.email)) },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Go
-                    ),
-                    keyboardActions = KeyboardActions(onGo = { TODO() }),
-                    singleLine = true,
-                    interactionSource = interactionSources[3],
-                    shape = MaterialTheme.shapes.large,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = Color.Transparent
-                    )
-                )
-
-                OutlinedTextField(
                     value = createdAccount,
                     onValueChange = { createdAccount = it },
                     modifier = modifier.shadow(
@@ -696,6 +661,57 @@ fun SettingContent(
                         focusedBorderColor = Color.Transparent,
                     )
                 )
+
+                ItemCard(
+                    onClick = {
+                        isEmailVisible = !isEmailVisible
+                        focusManager.clearFocus()
+                    },
+                    modifier = modifier
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                vertical = standardPadding / 4
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = {
+                                isEmailVisible = !isEmailVisible
+                                focusManager.clearFocus()
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.person_crop_square_filled_and_at_rectangle_fill),
+                                contentDescription = stringResource(R.string.email),
+                                modifier = Modifier.size(standardPadding * 1.5f),
+                                tint = Color(0xFF00BFA5)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(standardPadding / 2))
+
+                        Text(
+                            text = stringResource(R.string.email),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        )
+
+                        Text(
+                            text = updateViewModel.email.value ?: "",
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = standardPadding)
+                                .blur(
+                                    radius = if (isEmailVisible) 0.dp else 10.dp,
+                                    edgeTreatment = BlurredEdgeTreatment.Unbounded
+                                ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                }
             }
         }
 

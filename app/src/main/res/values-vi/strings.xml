@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">BioFit</string>
     <string name="des_app_name">Dinh dưỡng và Sức khỏe</string>
-    <string name="welcome_to_app">Chào mừng bạn đến với BioFit!</string>
+    <string name="welcome_to_app">Chào mừng đến với</string>
     <string name="start_title_1">Ứng dụng quản lý sức khỏe và dinh dưỡng</string>
     <string name="start_title_2">Theo dõi và cải thiện sức khỏe của bạn một cách dễ dàng với BioFit</string>
     <string name="get_started">BẮT ĐẦU</string>
@@ -91,7 +91,7 @@
     <string name="loaded">Đã nạp</string>
     <string name="cal">cal</string>
     <string name="remaining_calories">Lượng calo còn lại</string>
-    <string name="edit">Chỉnh sửa</string>
+    <string name="edit">Sửa</string>
     <string name="protein">Chất đạm</string>
     <string name="powdered_sugar">Đường</string>
     <string name="fat">Chất béo</string>
@@ -385,4 +385,22 @@
     <string name="delete_food">Xoá thức ăn</string>
     <string name="food_deleted_successfully">Thức ăn đã được xoá thành công</string>
     <string name="ate_this_food">Đã ăn thức ăn này</string>
+    <string name="refresh_chat">Làm mới đoạn chat</string>
+    <string name="bionix">Bionix</string>
+    <string name="expires">Pro hết hạn vào: </string>
+    <string name="upgrade_pro">Nâng cấp Pro</string>
+    <string name="composing_a_message">Đang soạn tin nhắn ...</string>
+    <string name="bionix_tranning">" \n                [Tên của bạn là Bionix]\n                Bạn là trợ lý AI trong ứng dụng BioFit, chuyên về sức khỏe, thể hình và dinh dưỡng.\n                Mục tiêu của bạn là giúp người dùng cải thiện sức khỏe với những lời khuyên cá nhân hóa.\n            \n                [Hướng dẫn phản hồi]\n                Chỉ phản hồi những nội dung liên quan đến sức khỏe, thể hình và dinh dưỡng.\n                Nếu người dùng nhập nội dung không liên quan đến các chủ đề trên, hãy từ chối một cách lịch sự và hướng họ quay lại chủ đề về sức khỏe.\n                Câu trả lời nên ngắn gọn, thân thiện (thêm biểu tượng để tránh nhàm chán) và thiết thực.\n                Không cung cấp chẩn đoán y khoa — hãy khuyến nghị người dùng tham khảo ý kiến chuyên gia khi cần thiết.\n            "</string>
+    <string name="close_chat_box">Đóng hộp chat</string>
+    <string name="you_haven_t_done_any_exercises_during_this_time_period">Bạn đã chưa tập bài tập nào trong khoảng thời gian này.</string>
+    <string name="you_haven_t_done_any_exercises_this_week">Bạn đã chưa tập bài tập nào trong tuần này.</string>
+    <string name="des_do_exercise">Hãy tập luyện mỗi ngày để có một sức khỏe dẻo dai, tràn đầy năng lượng và cải thiện chất lượng cuộc sống.</string>
+    <string name="_30_savings">TIẾT KIỆM 30%</string>
+    <string name="des_delete_exercise">Sau khi xóa bài tập này, toàn bộ dữ liệu và lịch sử liên quan đến bài tập sẽ bị xóa bỏ hoàn toàn và không thể khôi phục khỏi hệ thống. Bạn có chắc chắn muốn thực hiện hành động này không?</string>
+    <string name="set_to_amateur_low_to_edit"><![CDATA[Đặt thành Nghiệp dư & Thấp để sửa]]></string>
+    <string name="des_no_select_level">Bạn đang chỉnh sửa bài tập; xin lưu trước khi chọn mức độ để thực hiện.</string>
+    <string name="des_no_select_intensity">Bạn đang chỉnh sửa bài tập; xin lưu trước khi chọn cường độ để thực hiện.</string>
+    <string name="exercise_created_successfully">Bài tập đã được tạo tành công</string>
+    <string name="are_you_sure_you_want_to_delete_this_exercise">Are you sure you want to delete this exercise</string>
+    <string name="failed_to_delete_exercise">Failed to delete exercise</string>
 </resources>

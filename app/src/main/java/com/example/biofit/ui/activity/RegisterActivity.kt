@@ -193,7 +193,7 @@ fun RegisterForm(
                 )
             },
             isError = emailError != null,
-            supportingText = { emailError?.let { Text(stringResource(it)) } },
+            supportingText = emailError?.let { { Text(stringResource(it)) } },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -247,78 +247,80 @@ fun RegisterForm(
                 )
             },
             isError = passwordError != null,
-            supportingText = {
-                Column {
-                    passwordError?.let { Text(stringResource(it)) }
-                    if (viewModel.password.value.isNotEmpty()) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
-                        ) {
-                            Box(
+            supportingText = if (passwordError != null || viewModel.password.value.isNotEmpty()) {
+                {
+                    Column {
+                        passwordError?.let { Text(stringResource(it)) }
+                        if (viewModel.password.value.isNotEmpty()) {
+                            Row(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(
-                                        if (passwordStrength >= 1)
-                                            when (passwordStrength) {
-                                                1 -> Color(0xFFDD2C00)
-                                                2 -> Color(0xFFFFAB00)
-                                                3 -> MaterialTheme.colorScheme.primary
-                                                else -> Color.Transparent
-                                            }
-                                        else Color.Gray.copy(alpha = 0.3f)
-                                    )
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(
-                                        if (passwordStrength >= 2)
-                                            when (passwordStrength) {
-                                                2 -> Color(0xFFFFAB00)
-                                                3 -> MaterialTheme.colorScheme.primary
-                                                else -> Color.Transparent
-                                            }
-                                        else Color.Gray.copy(alpha = 0.3f)
-                                    )
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(
-                                        if (passwordStrength >= 3) MaterialTheme.colorScheme.primary
-                                        else Color.Gray.copy(alpha = 0.3f)
-                                    )
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(
+                                            if (passwordStrength >= 1)
+                                                when (passwordStrength) {
+                                                    1 -> Color(0xFFDD2C00)
+                                                    2 -> Color(0xFFFFAB00)
+                                                    3 -> MaterialTheme.colorScheme.primary
+                                                    else -> Color.Transparent
+                                                }
+                                            else Color.Gray.copy(alpha = 0.3f)
+                                        )
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(
+                                            if (passwordStrength >= 2)
+                                                when (passwordStrength) {
+                                                    2 -> Color(0xFFFFAB00)
+                                                    3 -> MaterialTheme.colorScheme.primary
+                                                    else -> Color.Transparent
+                                                }
+                                            else Color.Gray.copy(alpha = 0.3f)
+                                        )
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(
+                                            if (passwordStrength >= 3) MaterialTheme.colorScheme.primary
+                                            else Color.Gray.copy(alpha = 0.3f)
+                                        )
+                                )
+                            }
+                            Text(
+                                text = when (passwordStrength) {
+                                    1 -> stringResource(R.string.weak_password)
+                                    2 -> stringResource(R.string.medium_password)
+                                    3 -> stringResource(R.string.strong_password)
+                                    else -> ""
+                                },
+                                color = when (passwordStrength) {
+                                    1 -> Color(0xFFDD2C00)
+                                    2 -> Color(0xFFFFAB00)
+                                    3 -> MaterialTheme.colorScheme.primary
+                                    else -> Color.Transparent
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = 4.dp)
                             )
                         }
-                        Text(
-                            text = when (passwordStrength) {
-                                1 -> stringResource(R.string.weak_password)
-                                2 -> stringResource(R.string.medium_password)
-                                3 -> stringResource(R.string.strong_password)
-                                else -> ""
-                            },
-                            color = when (passwordStrength) {
-                                1 -> Color(0xFFDD2C00)
-                                2 -> Color(0xFFFFAB00)
-                                3 -> MaterialTheme.colorScheme.primary
-                                else -> Color.Transparent
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
                     }
                 }
-            },
+            } else null,
             visualTransformation = if (passwordVisible) {
                 VisualTransformation.None
             } else {

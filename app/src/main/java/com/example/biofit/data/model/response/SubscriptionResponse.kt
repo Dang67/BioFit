@@ -6,5 +6,6 @@ data class SubscriptionResponse(
     val planType: String,
     val startDate: String,
     val endDate: String,
-    val active: Boolean
+    val active: Boolean,
+    val totalSubscriptionDays: Int
 )

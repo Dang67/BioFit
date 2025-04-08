@@ -1,5 +1,6 @@
 package com.example.biofit.view_model
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +11,7 @@ import com.example.biofit.data.model.dto.ExerciseDetailDTO
 import com.example.biofit.data.model.dto.ExerciseDoneDTO
 import com.example.biofit.data.model.dto.OverviewExerciseDTO
 import com.example.biofit.data.remote.RetrofitClient
+import com.example.biofit.data.utils.OverviewExerciseSharedPrefsHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -205,7 +207,7 @@ class ExerciseViewModel : ViewModel() {
     val overviewExerciseList: StateFlow<List<OverviewExerciseDTO>> =
         _overviewExerciseList.asStateFlow()
 
-    fun fetchOverviewExercises(userId: Long, startDate: String, endDate: String) {
+    fun fetchOverviewExercises(context: Context, userId: Long, startDate: String, endDate: String) {
         RetrofitClient.instance.getOverviewExercises(userId, startDate, endDate)
             .enqueue(object : Callback<List<OverviewExerciseDTO>> {
                 override fun onResponse(
@@ -215,6 +217,8 @@ class ExerciseViewModel : ViewModel() {
                     if (response.isSuccessful) {
                         _overviewExerciseList.value = response.body() ?: emptyList()
                         Log.d("OverviewExerciseVM", "Overview exercises: ${response.body()}")
+
+                        OverviewExerciseSharedPrefsHelper.saveListOverviewExercise(context, _overviewExerciseList.value.toList())
                     } else {
                         Log.e("OverviewExerciseVM", "API Error: ${response.code()}")
                     }
@@ -224,6 +228,11 @@ class ExerciseViewModel : ViewModel() {
                     Log.e("OverviewExerciseVM", "Network Error", t)
                 }
             })
+    }
+
+    // Hàm làm mới (wrapper)
+    fun refreshOverviewExercises(context: Context, userId: Long, startDate: String, endDate: String) {
+        fetchOverviewExercises(context, userId, startDate, endDate)
     }
 
     private val _burnedCalories = MutableLiveData<Float>()

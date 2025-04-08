@@ -52,6 +52,7 @@ import com.example.biofit.ui.theme.BioFitTheme
 import com.example.biofit.view_model.ExerciseViewModel
 import kotlinx.coroutines.delay
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class ExerciseViewActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,7 +102,9 @@ fun ExerciseViewScreen(
 
     val exerciseName = exerciseDTO.exerciseName
     Log.d("ExerciseViewScreen", "exerciseName: $exerciseName")
-    val time = exerciseDetailDTO.time.toInt()
+    val time = exerciseDetailDTO.time
+    val minute = time.toInt()
+    val second = ((time - minute) * 60).roundToInt()
     Log.d("ExerciseViewScreen", "time: $time")
     val burnedCalories = exerciseDetailDTO.burnedCalories
     Log.d("ExerciseViewScreen", "burnedCalories: $burnedCalories")
@@ -112,7 +115,7 @@ fun ExerciseViewScreen(
 
     val exercise = Exercise(
         name = exerciseName,
-        time = Pair(time, 0),
+        time = Pair(minute, second),
         calories = burnedCalories,
         level = level,
         intensity = intensity,

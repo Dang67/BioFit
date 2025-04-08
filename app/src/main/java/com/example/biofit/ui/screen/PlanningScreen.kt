@@ -3,6 +3,7 @@ package com.example.biofit.ui.screen
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Paint
 import android.widget.NumberPicker
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -53,7 +54,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -77,10 +80,20 @@ import com.example.biofit.ui.components.SubCard
 import com.example.biofit.ui.components.getStandardPadding
 import com.example.biofit.ui.theme.BioFitTheme
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.axis.horizontal.rememberTopAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberEndAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollState
+import com.patrykandpatrick.vico.compose.component.shape.shader.fromBrush
 import com.patrykandpatrick.vico.compose.component.textComponent
+import com.patrykandpatrick.vico.core.chart.line.LineChart
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
+import com.patrykandpatrick.vico.core.component.shape.ShapeComponent
+import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
+import com.patrykandpatrick.vico.core.component.text.VerticalPosition
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 
@@ -600,6 +613,9 @@ fun CaloriesLineChart(
     val context = LocalContext.current
     val activity = context as? Activity
 
+    val min = weightData.minOf { it.second }
+    val max = weightData.maxOf { it.second }
+
     val chartEntryModel = remember {
         ChartEntryModelProducer(
             weightData.mapIndexed { index, data ->
@@ -608,7 +624,40 @@ fun CaloriesLineChart(
         )
     }
 
-    val lineChart = lineChart()
+    val lineChart = lineChart(
+        lines = listOf(
+            LineChart.LineSpec(
+                lineColor = MaterialTheme.colorScheme.outline.toArgb(),
+                lineBackgroundShader = DynamicShaders.fromBrush(
+                    Brush.verticalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.25f),
+                            Color.Transparent
+                        )
+                    )
+                ),
+                lineThicknessDp = 3f,
+                lineCap = Paint.Cap.ROUND,
+                dataLabel = textComponent(
+                    color = MaterialTheme.colorScheme.onBackground,
+                    background = ShapeComponent(
+                        shape = Shapes.pillShape,
+                        color = Color.Transparent.toArgb()
+                    )
+                ),
+                dataLabelVerticalPosition = VerticalPosition.Top,
+                point = ShapeComponent(
+                    shape = Shapes.pillShape,
+                    color = MaterialTheme.colorScheme.onBackground.toArgb()
+                ),
+                pointSizeDp = 10f,
+            )
+        ),
+        axisValuesOverrider = AxisValuesOverrider.fixed(
+            minY = min - (max - min),
+            maxY = max + (max - min)
+        )
+    )
 
     val marker = rememberMarkerComponent()
 
@@ -681,7 +730,8 @@ fun CaloriesLineChart(
                 ),
                 valueFormatter = { value, _ ->
                     weightData.getOrNull(value.toInt())?.first ?: ""
-                }
+                },
+                guideline = null
             ),
             marker = marker,
             isZoomEnabled = true,

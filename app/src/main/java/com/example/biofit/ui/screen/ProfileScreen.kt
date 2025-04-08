@@ -17,9 +17,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -30,13 +28,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
@@ -48,6 +43,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -57,29 +54,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.biofit.BuildConfig
 import com.example.biofit.R
+import com.example.biofit.data.model.ChatBotModel
+import com.example.biofit.data.model.dto.DailyLogDTO
 import com.example.biofit.data.model.dto.UserDTO
 import com.example.biofit.data.utils.DailyLogSharedPrefsHelper
+import com.example.biofit.data.utils.OverviewExerciseSharedPrefsHelper
+import com.example.biofit.data.utils.UserSharedPrefsHelper
 import com.example.biofit.navigation.OverviewActivity
 import com.example.biofit.ui.activity.LoginActivity
 import com.example.biofit.ui.activity.SettingActivity
@@ -91,8 +90,13 @@ import com.example.biofit.ui.components.SelectionDialog
 import com.example.biofit.ui.components.SubCard
 import com.example.biofit.ui.components.getStandardPadding
 import com.example.biofit.ui.theme.BioFitTheme
+import com.example.biofit.view_model.AIChatbotViewModel
+import com.example.biofit.view_model.ExerciseViewModel
 import com.example.biofit.view_model.LoginViewModel
+import com.example.biofit.view_model.SubscriptionViewModel
 import com.example.biofit.view_model.UpdateUserViewModel
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -139,7 +143,8 @@ fun ProfileContent(
     userData: UserDTO,
     standardPadding: Dp,
     modifier: Modifier,
-    loginViewModel: LoginViewModel = viewModel()
+    loginViewModel: LoginViewModel = viewModel(),
+    subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -149,6 +154,7 @@ fun ProfileContent(
     var showDeleteDataDialog by rememberSaveable { mutableStateOf(false) }
     var showAvatarDialog by rememberSaveable { mutableStateOf(false) }
     val viewModel: UpdateUserViewModel = viewModel()
+    val subscription by subscriptionViewModel.subscription.collectAsState()
 
 
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -187,6 +193,10 @@ fun ProfileContent(
 
     val avatarBitmap = viewModel.avatarBitmap.value ?: userData.avatar?.let { base64ToBitmap(it) }
 
+    // Gọi API khi màn hình được hiển thị
+    LaunchedEffect(Unit) {
+        subscriptionViewModel.fetchSubscription(userData.userId)
+    }
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(standardPadding * 2),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -280,8 +290,59 @@ fun ProfileContent(
                         color = MaterialTheme.colorScheme.onBackground,
                         style = MaterialTheme.typography.titleSmall
                     )
-                }
 
+                    // Xử lý hiển thị thông tin subscription
+                    when {
+                        subscription?.active == true -> {
+                            val formatter = DateTimeFormatter.ofPattern(
+                                if (Locale.current.language == "vi") "dd/MM/yyyy" else "yyyy/MM/dd"
+                            )
+                            val endDate =
+                                LocalDateTime.parse(subscription!!.endDate).format(formatter)
+
+                            val annotatedString = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
+                                ) {
+                                    append(stringResource(R.string.expires) + " ")
+                                }
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                ) {
+                                    append(endDate)
+                                }
+                            }
+
+                            Text(
+                                text = annotatedString,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = standardPadding / 2)
+                            )
+                        }
+
+                        else -> {
+                            // Subscription không active hoặc không tồn tại
+                            Text(
+                                text = stringResource(R.string.upgrade_pro),
+                                color = MaterialTheme.colorScheme.secondary,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier
+                                    .padding(top = standardPadding / 2)
+                                    .clickable {
+                                        val intent =
+                                            Intent(context, UpgradeActivity::class.java).apply {
+                                                putExtra("source", "ProfileScreen")
+                                            }
+                                        context.startActivity(intent)
+                                    }
+                            )
+                        }
+                    }
+                }
                 IconButton(
                     onClick = {
                         activity?.let {
@@ -800,10 +861,73 @@ fun signOut(
     context: Context,
     activity: Activity
 ) {
-    val sharedPreferences = activity.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    val apiKey = BuildConfig.GOOGLE_API_KEY
+    val userData = UserSharedPrefsHelper.getUserData(context)
+    val dailyWeightData = DailyLogSharedPrefsHelper.getDailyLog(context)
+    val exerciseViewModel = ExerciseViewModel()
+    val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+    exerciseViewModel.fetchOverviewExercises(
+        context,
+        userData?.userId ?: UserDTO.default().userId,
+        userData?.createdAccount ?: UserDTO.default().createdAccount,
+        today
+    )
+    val overviewExerciseData = OverviewExerciseSharedPrefsHelper.getListOverviewExercise(context)
+    val mappedExercises = overviewExerciseData?.map { exercise ->
+        val levelStr = when (exercise.level) {
+            0 -> context.getString(R.string.amateur)
+            1 -> context.getString(R.string.professional)
+            else -> context.getString(R.string.unknown)
+        }
+
+        val intensityStr = when (exercise.intensity) {
+            0 -> context.getString(R.string.low)
+            1 -> context.getString(R.string.medium)
+            2 -> context.getString(R.string.high)
+            else -> context.getString(R.string.unknown)
+        }
+
+        val sessionStr = when (exercise.session) {
+            0 -> context.getString(R.string.morning)
+            1 -> context.getString(R.string.afternoon)
+            2 -> context.getString(R.string.evening)
+            else -> context.getString(R.string.unknown)
+        }
+
+        "(${context.getString(R.string.exercise)}: ${exercise.exerciseName}, ${context.getString(R.string.level)}: $levelStr, ${
+            context.getString(
+                R.string.intensity
+            )
+        }: $intensityStr, ${context.getString(R.string.time)}: ${exercise.time} ${
+            context.getString(
+                R.string.minutes
+            )
+        }, ${context.getString(R.string.burned_calories)}: ${exercise.burnedCalories} ${
+            context.getString(
+                R.string.kcal
+            )
+        }, ${context.getString(R.string.session)}: $sessionStr, ${context.getString(R.string.day)}: ${exercise.date})"
+    }
+    val model = ChatBotModel(
+        userData = userData ?: UserDTO.default(),
+        dailyLogData = dailyWeightData ?: DailyLogDTO.default(),
+        exerciseDone = mappedExercises,
+        context = context,
+        apiKey = apiKey,
+    )
+    val viewModel = AIChatbotViewModel(model, context)
+    viewModel.clearChatHistory() // Xóa lịch sử chat
+
+    val userSharedPreferences = activity.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+    val dailyLogSharedPreferences =
+        activity.getSharedPreferences("DailyLogPrefs", Context.MODE_PRIVATE)
+    val overviewExerciseSharedPreferences =
+        activity.getSharedPreferences("OverviewExercisePrefs", Context.MODE_PRIVATE)
 
     // Xóa dữ liệu đăng nhập (SharedPreferences)
-    sharedPreferences.edit { clear() }
+    userSharedPreferences.edit { clear() }
+    dailyLogSharedPreferences.edit { clear() }
+    overviewExerciseSharedPreferences.edit { clear() }
 
     // Đăng xuất Firebase (nếu dùng Firebase)
     //FirebaseAuth.getInstance().signOut()

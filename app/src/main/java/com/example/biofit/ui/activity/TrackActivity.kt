@@ -151,7 +151,17 @@ fun TrackScreen(
                         ) {
                             filteredOptions.forEach { selection ->
                                 DropdownMenuItem(
-                                    text = { Text(text = stringResource(selection)) },
+                                    text = {
+                                        Text(
+                                            text = stringResource(selection),
+                                            color = when (selection) {
+                                                R.string.morning -> Color(0xFFFFAB00)
+                                                R.string.afternoon -> Color(0xFFDD2C00)
+                                                R.string.evening -> Color(0xFF2962FF)
+                                                else -> Color(0xFF00BFA5)
+                                            }
+                                        )
+                                    },
                                     onClick = {
                                         selectedOption = selection
                                         expanded = false

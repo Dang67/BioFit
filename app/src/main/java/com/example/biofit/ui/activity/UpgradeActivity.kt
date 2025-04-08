@@ -32,8 +32,11 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,7 +46,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -90,13 +95,13 @@ fun UpgradeScreen(source: String?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
         // Background food images
         Image(
             painter = painterResource(id = R.drawable.healthy_food),
-            contentDescription = null,
+            contentDescription = stringResource(R.string.des_app_name),
             modifier = Modifier
                 .align(Alignment.TopEnd) // Căn ảnh về góc phải trên
                 .size(170.dp),
@@ -122,13 +127,12 @@ fun UpgradeScreen(source: String?) {
                 .padding(20.dp)
                 .padding(top = 25.dp)
                 .size(36.dp)
-                .background(Color(0xFF4CAF50), CircleShape)
                 .zIndex(10f) // Đảm bảo nút hiển thị phía trên các thành phần khác
         ) {
             Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Close",
-                tint = Color.White
+                painter = painterResource(R.drawable.xmark_circle_fill),
+                contentDescription = stringResource(R.string.close),
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
 
@@ -144,19 +148,16 @@ fun UpgradeScreen(source: String?) {
             // Header
             Text(
                 text = "${stringResource(R.string.hello_upgrade_1)} \n${stringResource(R.string.hello_upgrade_2)}",
-                style = TextStyle(
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.displaySmall.copy(
+                    fontWeight = FontWeight.Bold
                 )
             )
 
             Text(
                 text = "${stringResource(R.string.upgrade_1)} ${stringResource(R.string.upgrade_2)}",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    color = Color.DarkGray
-                ),
+                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 12.dp)
             )
 
@@ -187,10 +188,9 @@ fun UpgradeScreen(source: String?) {
             // Plan selection
             Text(
                 text = stringResource(R.string.plan_selection),
-                style = TextStyle(
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
                 ),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -217,7 +217,7 @@ fun UpgradeScreen(source: String?) {
                         originalPrice = "150.00 đ",
                         billingInfo = stringResource(R.string.billed_yearly_after_free_trial),
                         isSelected = selectedPlan == "YEARLY",
-                        savings = "30% SAVINGS",
+                        savings = stringResource(R.string._30_savings),
                         onClick = { selectedPlan = "YEARLY" }
                     )
                 }
@@ -248,11 +248,8 @@ fun UpgradeScreen(source: String?) {
 
             Text(
                 text = stringResource(R.string.title_experence),
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
-                ),
+                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -260,22 +257,19 @@ fun UpgradeScreen(source: String?) {
             Spacer(modifier = Modifier.height(50.dp))
 
             // upgrade now
-            Button(
+            ElevatedButton(
                 onClick = { showPaymentMethodDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50)
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Text(
                     stringResource(R.string.upgrade_now),
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
                     )
                 )
             }
@@ -331,19 +325,16 @@ fun PremiumFeatureItem(title: String, description: String) {
             Row {
                 Text(
                     text = title,
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.Bold
                     )
                 )
 
                 Text(
                     text = " $description",
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = Color.Black
-                    )
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }
@@ -373,18 +364,17 @@ fun PlanCard(
                     .align(Alignment.TopCenter)
                     .offset(y = (-1).dp)
                     .background(
-                        color = Color(0xFF4CAF50),
-                        shape = RoundedCornerShape(24.dp)
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = MaterialTheme.shapes.extraLarge
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .zIndex(1f) // Ensure it appears above the card
             ) {
                 Text(
                     text = savings,
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold
                     )
                 )
             }
@@ -397,11 +387,14 @@ fun PlanCard(
                 .padding(top = if (savings != null) 16.dp else 0.dp)
                 .border(
                     width = 2.dp,
-                    color = if (isSelected) Color(0xFF4CAF50) else Color.LightGray,
-                    shape = RoundedCornerShape(16.dp)
+                    color = if (isSelected)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.surfaceContainerHighest,
+                    shape = MaterialTheme.shapes.extraLarge
                 )
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color.White)
+                .clip(MaterialTheme.shapes.extraLarge)
+                .background(MaterialTheme.colorScheme.background)
                 .clickable(onClick = onClick)
         ) {
             Column(
@@ -412,10 +405,9 @@ fun PlanCard(
             ) {
                 Text(
                     text = title,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold
                     )
                 )
 
@@ -426,27 +418,25 @@ fun PlanCard(
                 ) {
                     Text(
                         text = price.substringBefore(" "),
-                        style = TextStyle(
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
                         )
                     )
 
                     Text(
                         text = " đ",
-                        style = TextStyle(
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
                         )
                     )
 
                     Text(
                         text = perDuration,
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            color = Color.Black
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
                         )
                     )
                 }
@@ -454,9 +444,8 @@ fun PlanCard(
                 if (originalPrice != null) {
                     Text(
                         text = originalPrice,
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            color = Color.Gray,
+                        color = MaterialTheme.colorScheme.outline,
+                        style = MaterialTheme.typography.bodySmall.copy(
                             textDecoration = TextDecoration.LineThrough
                         )
                     )
@@ -466,11 +455,9 @@ fun PlanCard(
 
                 Text(
                     text = billingInfo,
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        textAlign = TextAlign.Center
-                    )
+                    color = MaterialTheme.colorScheme.outline,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall
                 )
 
                 // Box Savings
@@ -478,15 +465,14 @@ fun PlanCard(
                     Box(
                         modifier = Modifier
                             .align(Alignment.End)
-                            .size(12.dp)
-                            .background(Color(0xFF4CAF50), CircleShape),
+                            .size(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Check,
+                            painter = painterResource(R.drawable.checkmark_circle_fill),
                             contentDescription = "Selected",
-                            tint = Color.White,
-                            modifier = Modifier.size(10.dp)
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(12.dp)
                         )
                     }
                 } else {
@@ -494,7 +480,10 @@ fun PlanCard(
                         modifier = Modifier
                             .align(Alignment.End)
                             .size(12.dp)
-                            .border(1.dp, Color.LightGray, CircleShape)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = CircleShape),
                     )
                 }
             }

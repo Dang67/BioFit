@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">BioFit</string>
     <string name="des_app_name">Nutrition and Healthy</string>
-    <string name="welcome_to_app">Welcome to BioFit!</string>
+    <string name="welcome_to_app">Welcome to</string>
     <string name="start_title_1">Health and nutrition management application</string>
     <string name="start_title_2">Track and improve your health the easy way with BioFit</string>
     <string name="get_started">GET STARTED</string>
@@ -387,4 +387,22 @@
     <string name="delete_food">Delete food</string>
     <string name="food_deleted_successfully">Food deleted successfully</string>
     <string name="ate_this_food">Ate this food</string>
+    <string name="refresh_chat">Refresh chat</string>
+    <string name="bionix">Bionix</string>
+    <string name="expires">Pro expires on: </string>
+    <string name="upgrade_pro">Upgrade to Pro</string>
+    <string name="composing_a_message">Composing a message ...</string>
+    <string name="bionix_tranning">" \n                [Your name is Bionix]\n                You are the AI assistant in the BioFit app, specializing in health, fitness and nutrition.\n                Your goal is to help users improve their health with personalized advice.\n            \n                [Response Guidelines]\n                Only respond to user input related to health, fitness, and nutrition.\n                If a user's input is unrelated to health, fitness, or nutrition, politely decline and guide them back to health-related topics.\n                Responses should be brief, friendly(add icons to avoid boredom), and practical.\n                Do not provide medical diagnoses—recommend consulting a professional when necessary.\n            "</string>
+    <string name="close_chat_box">Close chat box</string>
+    <string name="you_haven_t_done_any_exercises_during_this_time_period">You haven\'t done any exercises during this time period.</string>
+    <string name="you_haven_t_done_any_exercises_this_week">You haven\'t done any exercises this week.</string>
+    <string name="des_do_exercise">Exercise every day to maintain a strong, energetic, and healthy life while improving your overall well-being.</string>
+    <string name="_30_savings">30% SAVINGS</string>
+    <string name="des_delete_exercise">Upon deleting this workout, all associated data and historical records pertaining to it will be irrevocably and permanently removed from the system. Are you certain you wish to proceed with this action?</string>
+    <string name="set_to_amateur_low_to_edit"><![CDATA[Set to Amateur & Low to edit]]></string>
+    <string name="des_no_select_level">You are modifying an exercise; please save it before selecting a level to do.</string>
+    <string name="des_no_select_intensity">You are modifying an exercise; please save it before selecting a intensity to do.</string>
+    <string name="exercise_created_successfully">Exercise created successfully</string>
+    <string name="are_you_sure_you_want_to_delete_this_exercise">Are you sure you want to delete this exercise</string>
+    <string name="failed_to_delete_exercise">Failed to delete exercise</string>
 </resources>

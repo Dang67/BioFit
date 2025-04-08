@@ -10,9 +10,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -23,12 +31,15 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +57,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -55,13 +68,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biofit.R
 import com.example.biofit.data.utils.UserSharedPrefsHelper
+import com.example.biofit.ui.components.DefaultDialog
 import com.example.biofit.ui.components.ExerciseItem
+import com.example.biofit.ui.components.SubCard
 import com.example.biofit.ui.components.TopBar
 import com.example.biofit.ui.components.getStandardPadding
 import com.example.biofit.ui.theme.BioFitTheme
@@ -158,6 +174,8 @@ fun ExerciseContent(
 
     var search by rememberSaveable { mutableStateOf("") }
 
+    var deleteExerciseDialog by remember { mutableStateOf(false) }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(standardPadding),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -227,6 +245,8 @@ fun ExerciseContent(
             .sortedBy { it.exerciseName }
             .groupBy { it.exerciseName.first().uppercaseChar() }
 
+        val expandedState = remember { mutableStateOf<Pair<String?, Int?>>(null to null) }
+        val expanded = remember { mutableStateOf<Pair<String?, Int?>>(null to null) }
         LazyColumn {
             Log.d("ExerciseListScreen", "exerciseList size: ${exerciseList.size}")
 
@@ -240,94 +260,140 @@ fun ExerciseContent(
                     )
                 }
 
-                items(exercises) { exercise ->
-                    var expanded by remember { mutableStateOf(false) }
-                    val menuAnchor = remember { Ref<androidx.compose.ui.geometry.Rect>() }
+                itemsIndexed(exercises) { index, exercise ->
 
-                    Box {
+                    val menuAnchor = remember { Ref<Rect>() }
+
+                    Column(modifier = modifier) {
                         ExerciseItem(
-                            exercise = exercise.exerciseName,
-                            onClick = {
+                            onDoClick = {
                                 activity?.let {
                                     val intent =
                                         Intent(it, UpdateExerciseActivity::class.java).apply {
                                             putExtra("exerciseId", exercise.exerciseId)
                                             putExtra("exerciseDTO", exercise)
+                                            putExtra("title", R.string.do_exercise)
                                         }
                                     it.startActivity(intent)
                                 }
+                                expandedState.value = (null to null)
+                                expanded.value = (null to null)
                             },
-                            onLongClick = { expanded = true },
+                            onEditClick = {
+                                activity?.let {
+                                    val intent =
+                                        Intent(it, UpdateExerciseActivity::class.java).apply {
+                                            putExtra("exerciseId", exercise.exerciseId)
+                                            putExtra("exerciseDTO", exercise)
+                                            putExtra("title", R.string.edit_exercise)
+                                        }
+                                    it.startActivity(intent)
+                                }
+                                expandedState.value = (null to null)
+                                expanded.value = (null to null)
+                            },
+                            onDeleteClick = {
+                                expanded.value = (letter.toString() to index)
+                                expandedState.value = (null to null)
+                            },
+                            exercise = exercise,
                             standardPadding = standardPadding,
                             modifier = modifier
-                                .padding(top = standardPadding)
                                 .onGloballyPositioned { coordinates ->
                                     menuAnchor.value =
                                         coordinates.boundsInRoot() // Lưu vị trí của ExerciseItem
-                                }
+                                },
+                            isExpanded = expandedState.value == (letter.toString() to index), // So sánh cặp (date, index)
+                            onExpandChange = { isExpanded ->
+                                expandedState.value =
+                                    if (isExpanded) (letter.toString() to index) else (null to null)
+                                expanded.value = (null to null)
+                            }
                         )
 
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                        AnimatedVisibility(
+                            visible = expanded.value == (letter.toString() to index),
+                            enter = slideInVertically { it } + fadeIn() + expandVertically(),
+                            exit = slideOutVertically { it } + fadeOut() + shrinkVertically()
                         ) {
-                            DropdownMenuItem(
-                                text = {
+                            Row (
+                                horizontalArrangement = Arrangement.spacedBy(standardPadding),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                SubCard(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = stringResource(R.string.edit_exercise),
-                                        color = Color(0xFFFF6D00)
-                                    )
-                                },
-                                onClick = {
-                                    activity?.let {
-                                        val intent =
-                                            Intent(it, UpdateExerciseActivity::class.java).apply {
-                                                putExtra("exerciseId", exercise.exerciseId)
-                                                putExtra("exerciseDTO", exercise)
-                                            }
-                                        it.startActivity(intent)
-                                    }
-                                    expanded = false
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.ic_edit),
-                                        contentDescription = stringResource(R.string.edit_exercise),
-                                        modifier = Modifier.size(standardPadding * 1.5f),
-                                        tint = Color(0xFFFF6D00)
+                                        text = stringResource(R.string.des_delete_exercise),
+                                        color = MaterialTheme.colorScheme.outline,
+                                        modifier = Modifier.padding(standardPadding),
+                                        textAlign = TextAlign.Justify,
+                                        style = MaterialTheme.typography.bodySmall
                                     )
                                 }
-                            )
 
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = stringResource(R.string.delete_exercise),
-                                        color = Color(0xFFDD2C00)
-                                    )
-                                },
-                                onClick = {
-                                    Log.d(
-                                        "ExerciseListScreen",
-                                        "Deleting exercise: ${exercise.exerciseId}"
-                                    )
-                                    exerciseViewModel.deleteExercise(exercise.exerciseId)
-                                    expanded = false
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.exercise_deleted_successfully),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.trash),
-                                        contentDescription = stringResource(R.string.delete_exercise),
-                                        modifier = Modifier.size(standardPadding * 1.5f),
-                                        tint = Color(0xFFDD2C00)
-                                    )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    ElevatedButton(
+                                        onClick = {
+                                            expanded.value = (null to null)
+                                            expandedState.value = (letter.toString() to index)
+                                        },
+                                        colors = ButtonDefaults.elevatedButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.outline
+                                        )
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(
+                                                standardPadding / 2
+                                            ),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ic_plus),
+                                                contentDescription = stringResource(R.string.delete_exercise),
+                                                modifier = Modifier
+                                                    .size(standardPadding * 1.5f)
+                                                    .rotate(45f),
+                                                tint = MaterialTheme.colorScheme.onPrimary
+                                            )
+                                        }
+                                    }
+
+                                    ElevatedButton(
+                                        onClick = {
+                                            Log.d(
+                                                "ExerciseListScreen",
+                                                "Deleting exercise: ${exercise.exerciseId}"
+                                            )
+                                            exerciseViewModel.deleteExercise(exercise.exerciseId)
+                                            expanded.value = (null to null)
+                                            expandedState.value = (null to null)
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.exercise_deleted_successfully),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        colors = ButtonDefaults.elevatedButtonColors(
+                                            containerColor = Color(0xFFDD2C00)
+                                        )
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(
+                                                standardPadding / 2
+                                            ),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.trash),
+                                                contentDescription = stringResource(R.string.delete_exercise),
+                                                modifier = Modifier.size(standardPadding * 1.5f),
+                                                tint = MaterialTheme.colorScheme.onPrimary
+                                            )
+                                        }
+                                    }
                                 }
-                            )
+                            }
                         }
                     }
                 }
