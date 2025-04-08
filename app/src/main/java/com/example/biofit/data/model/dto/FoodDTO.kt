@@ -55,7 +55,7 @@ data class FoodDTO(
             carbohydrate = Triple(R.drawable.ic_carbohydrate, R.string.carbohydrate, this.carbohydrate),
             fat = Triple(R.drawable.ic_fat, R.string.fat, this.fat),
             sodium = this.sodium,
-            session = this.session
+            session = this.session,
         )
     }
 }

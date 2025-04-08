@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,7 +55,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biofit.R
-import com.example.biofit.data.model.dto.FoodInfoDTO
 import com.example.biofit.data.utils.UserSharedPrefsHelper
 import com.example.biofit.ui.components.FoodItem
 import com.example.biofit.ui.components.TopBar
@@ -63,21 +63,17 @@ import com.example.biofit.ui.theme.BioFitTheme
 import com.example.biofit.view_model.FoodViewModel
 import com.patrykandpatrick.vico.core.extension.sumOf
 import java.math.RoundingMode
+import kotlin.getValue
 
 class TrackActivity : ComponentActivity() {
     private val foodViewModel: FoodViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val userId = UserSharedPrefsHelper.getUserData(this)?.userId ?: 0L
-        foodViewModel.fetchFood(userId)
         enableEdgeToEdge()
-        val foodId = intent.getLongExtra("FOOD_ID", -1L)
-        Log.d("FoodDetailActivity", "Received foodId: $foodId")
         val initialSelectedOption = intent.getIntExtra("SESSION_TITLE", R.string.morning)
-
         setContent {
             BioFitTheme {
-                TrackScreen(initialSelectedOption = initialSelectedOption, foodId = foodId)
+                TrackScreen(initialSelectedOption = initialSelectedOption)
             }
         }
     }
@@ -86,31 +82,23 @@ class TrackActivity : ComponentActivity() {
         super.onConfigurationChanged(newConfig)
         recreate()
     }
+    override fun onResume() {
+        super.onResume()
+        val userId = UserSharedPrefsHelper.getUserData(this)?.userId ?: 0L
+        foodViewModel.fetchFood(userId)
+    }
 }
 
 @Composable
 fun TrackScreen(
-    foodId: Long,
     initialSelectedOption: Int,
-    foodViewModel: FoodViewModel = viewModel()
 ) {
+
     val context = LocalContext.current
     val activity = context as? Activity
 
-
     val standardPadding = getStandardPadding().first
     val modifier = getStandardPadding().second
-
-    // Lấy danh sách thực phẩm từ ViewModel
-    val foodList by foodViewModel.foodList.collectAsState()
-
-    // Tìm thực phẩm có foodId tương ứng
-    val selectedFoodDTO = foodList.find { it.foodId == foodId }
-
-    // Nếu tìm thấy thực phẩm, chuyển đổi thành FoodInfoDTO
-    val selectedFoodInfoDTO = selectedFoodDTO?.toFoodInfoDTO() ?: FoodInfoDTO.default()
-    // Ghi log kiểm tra thực phẩm tìm được
-    Log.d("FoodDetailScreen", "Selected food: $selectedFoodInfoDTO")
 
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember { mutableIntStateOf(initialSelectedOption) }
@@ -194,10 +182,11 @@ fun TrackScreen(
                 rightButton = null,
                 standardPadding = standardPadding
             )
+
             TrackContent(
                 selectedOption = selectedOption,
                 standardPadding = standardPadding,
-                modifier = modifier
+                modifier = modifier,
             )
         }
     }
@@ -207,7 +196,7 @@ fun TrackScreen(
 fun TrackContent(
     selectedOption: Int,
     standardPadding: Dp,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -224,10 +213,7 @@ fun TrackContent(
                 NutritionalComposition(
                     selectedOption = selectedOption,
                     standardPadding = standardPadding,
-                    modifier = modifier,
-                    food = FoodInfoDTO.default(),
-                    foodId = 0
-
+                    modifier = modifier
                 )
             }
 
@@ -284,64 +270,54 @@ fun TrackContent(
 
 @Composable
 fun NutritionalComposition(
-    foodId: Long,
     selectedOption: Int,
     standardPadding: Dp,
     modifier: Modifier,
-    food: FoodInfoDTO,
-    foodViewModel: FoodViewModel = viewModel()
 ) {
-    val foodListDTO by foodViewModel.foodList.collectAsState()
-    val foodListInfoDTO = foodListDTO.map { it.toFoodInfoDTO() }
-
-    val foodListMorning = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.morning), ignoreCase = true) }
-    val foodListAfternoon = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.afternoon), ignoreCase = true) }
-    val foodListEvening = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.evening), ignoreCase = true) }
-    val foodListSnack = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.snack), ignoreCase = true) }
 
     val morningMacroTable = listOf(
         Triple(
-            food.protein.first,
-            food.protein.second,
+            food1.protein.first,
+            food1.protein.second,
             foodListMorning.sumOf { it.protein.third }),
         Triple(
-            food.carbohydrate.first,
-            food.carbohydrate.second,
+            food1.carbohydrate.first,
+            food1.carbohydrate.second,
             foodListMorning.sumOf { it.carbohydrate.third }),
-        Triple(food.fat.first, food.fat.second, foodListMorning.sumOf { it.fat.third })
+        Triple(food1.fat.first, food1.fat.second, foodListMorning.sumOf { it.fat.third })
     )
 
     val afternoonMacroTable = listOf(
         Triple(
-            food.protein.first,
-            food.protein.second,
+            food2.protein.first,
+            food2.protein.second,
             foodListAfternoon.sumOf { it.protein.third }),
         Triple(
-            food.carbohydrate.first,
-            food.carbohydrate.second,
+            food2.carbohydrate.first,
+            food2.carbohydrate.second,
             foodListAfternoon.sumOf { it.carbohydrate.third }),
-        Triple(food.fat.first, food.fat.second, foodListAfternoon.sumOf { it.fat.third })
+        Triple(food2.fat.first, food2.fat.second, foodListAfternoon.sumOf { it.fat.third })
     )
 
     val eveningMacroTable = listOf(
         Triple(
-            food.protein.first,
-            food.protein.second,
+            food3.protein.first,
+            food3.protein.second,
             foodListEvening.sumOf { it.protein.third }),
         Triple(
-            food.carbohydrate.first,
-            food.carbohydrate.second,
+            food3.carbohydrate.first,
+            food3.carbohydrate.second,
             foodListEvening.sumOf { it.carbohydrate.third }),
-        Triple(food.fat.first, food.fat.second, foodListEvening.sumOf { it.fat.third })
+        Triple(food3.fat.first, food3.fat.second, foodListEvening.sumOf { it.fat.third })
     )
 
     val snackMacroTable = listOf(
-        Triple(food.protein.first, food.protein.second, foodListSnack.sumOf { it.protein.third }),
+        Triple(food1.protein.first, food1.protein.second, foodListSnack.sumOf { it.protein.third }),
         Triple(
-            food.carbohydrate.first,
-            food.carbohydrate.second,
+            food1.carbohydrate.first,
+            food1.carbohydrate.second,
             foodListSnack.sumOf { it.carbohydrate.third }),
-        Triple(food.fat.first, food.fat.second, foodListSnack.sumOf { it.fat.third })
+        Triple(food1.fat.first, food1.fat.second, foodListSnack.sumOf { it.fat.third })
     )
 
     val sessionMacroTable = when (selectedOption) {
@@ -426,17 +402,39 @@ fun NutritionalComposition(
 
 @Composable
 fun MenuForSession(
-    foodId: Long,
     selectedOption: Int,
     standardPadding: Dp,
     modifier: Modifier,
+    foodId: Long,  // Thêm foodId vào đây
     foodViewModel: FoodViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
 
-    val foodListDTO by foodViewModel.foodList.collectAsState()
-    val foodListInfoDTO = foodListDTO.map { it.toFoodInfoDTO() }
+    // Lấy userId từ ViewModel (hoặc từ nơi nào đó bạn có)
+    val userId = foodViewModel.userId.collectAsState().value
+
+    // Lấy danh sách món ăn đã ăn từ FoodViewModel
+    val foodDoneList by foodViewModel.foodDoneList.collectAsState()
+
+    // Nếu chưa có dữ liệu món ăn đã ăn, gọi fetchFoodDoneList để lấy dữ liệu
+    LaunchedEffect(userId) {
+        userId?.let {
+            foodViewModel.fetchFoodDoneList(it)
+        }
+    }
+
+    Log.d("MenuForSession", "Food done list size: ${foodDoneList.size}")
+
+    // Lọc món ăn đã ăn có foodId khớp
+    val foodListDTO = foodDoneList.filter { it.foodId == foodId }  // Lọc theo foodId
+    Log.d("MenuForSession", "Filtered food list size: ${foodListDTO.size}")
+
+    // Chuyển FoodDTO thành FoodInfoDTO
+    val foodListInfoDTO = foodListDTO.mapNotNull { foodDone ->
+        foodViewModel.foodList.value.find { it.foodId == foodDone.foodId }?.toFoodInfoDTO()
+    }
+    Log.d("MenuForSession", "Food info list size: ${foodListInfoDTO.size}")
 
     val foodListMorning = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.morning), ignoreCase = true) }
     val foodListAfternoon = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.afternoon), ignoreCase = true) }
@@ -470,8 +468,6 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
-                                foodId = foodListMorning[index].foodId,
-                                session = foodListMorning[index].session,
                                 foodImg = foodListMorning[index].foodImage,
                                 foodName = foodListMorning[index].foodName,
                                 servingSize = Pair(
@@ -576,8 +572,6 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
-                                foodId = foodListAfternoon[index].foodId,
-                                session = foodListAfternoon[index].session,
                                 foodImg = foodListAfternoon[index].foodImage,
                                 foodName = foodListAfternoon[index].foodName,
                                 servingSize = Pair(
@@ -682,8 +676,6 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
-                                foodId = foodListEvening[index].foodId,
-                                session = foodListEvening[index].session,
                                 foodImg = foodListEvening[index].foodImage,
                                 foodName = foodListEvening[index].foodName,
                                 servingSize = Pair(
@@ -788,8 +780,6 @@ fun MenuForSession(
 
                         Box {
                             FoodItem(
-                                foodId = foodListSnack[index].foodId,
-                                session = foodListSnack[index].session,
                                 foodImg = foodListSnack[index].foodImage,
                                 foodName = foodListSnack[index].foodName,
                                 servingSize = Pair(
@@ -902,7 +892,7 @@ fun MenuForSession(
 @Composable
 private fun TrackScreenDarkModePreviewInSmallPhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
+        TrackScreen(initialSelectedOption = R.string.morning)
     }
 }
 
@@ -915,7 +905,7 @@ private fun TrackScreenDarkModePreviewInSmallPhone() {
 @Composable
 private fun TrackScreenPreviewInLargePhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
+        TrackScreen(initialSelectedOption = R.string.morning)
     }
 }
 
@@ -929,7 +919,7 @@ private fun TrackScreenPreviewInLargePhone() {
 @Composable
 private fun TrackScreenPreviewInTablet() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning,foodId = 0)
+        TrackScreen(initialSelectedOption = R.string.morning)
     }
 }
 
@@ -943,7 +933,7 @@ private fun TrackScreenPreviewInTablet() {
 @Composable
 private fun TrackScreenLandscapeDarkModePreviewInSmallPhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
+        TrackScreen(initialSelectedOption = R.string.morning)
     }
 }
 
@@ -956,7 +946,7 @@ private fun TrackScreenLandscapeDarkModePreviewInSmallPhone() {
 @Composable
 private fun TrackScreenLandscapePreviewInLargePhone() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
+        TrackScreen(initialSelectedOption = R.string.morning)
     }
 }
 
@@ -970,6 +960,6 @@ private fun TrackScreenLandscapePreviewInLargePhone() {
 @Composable
 private fun TrackScreenLandscapePreviewInTablet() {
     BioFitTheme {
-        TrackScreen(initialSelectedOption = R.string.morning, foodId = 0)
+        TrackScreen(initialSelectedOption = R.string.morning)
     }
 }

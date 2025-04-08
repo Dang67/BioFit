@@ -4,6 +4,7 @@ import com.example.biofit.data.model.dto.DailyLogDTO
 import com.example.biofit.data.model.dto.ExerciseDTO
 import com.example.biofit.data.model.dto.ExerciseDoneDTO
 import com.example.biofit.data.model.dto.FoodDTO
+import com.example.biofit.data.model.dto.FoodDoneDTO
 import com.example.biofit.data.model.dto.OverviewExerciseDTO
 import com.example.biofit.data.model.dto.PasswordResetDTO
 import com.example.biofit.data.model.dto.UserDTO
@@ -156,5 +157,43 @@ interface ApiService {
         @Path("foodId") foodId: Long,
         @Body foodDTO: FoodDTO
     ): Call<FoodDTO>
+
+    /*
+       ----------------------------------------------------------------------------------------------------
+       */
+    // Food Done API
+    @POST("api/food-done/create")
+    fun createFoodDone(@Body foodDoneDTO: FoodDoneDTO): Call<FoodDoneDTO>
+
+    // @GET("api/food-done/user/{userId}")
+    // fun getFoodDone(
+    //     @Path("userId") userId: Long,
+    //     @Query("startDate") startDate: String,
+    //     @Query("endDate") endDate: String
+    // ): Call<List<FoodDoneDTO>>
+
+    // Lấy danh sách món ăn đã ăn của người dùng trong một ngày cụ thể
+    @GET("food_done/{userId}/{date}")
+    fun getFoodDoneByDateAndUser(
+        @Path("userId") userId: Long,
+        @Path("date") date: String
+    ): Call<List<FoodDoneDTO>>
+
+
+    // Lấy tổng calories đã tiêu thụ trong ngày hôm nay
+    @GET("api/food-done/consumed-calories/today")
+    fun getConsumedCaloriesToday(
+        @Query("userId") userId: Long
+    ): Call<Float>
+
+    // Lấy tổng thời gian tiêu thụ thức ăn trong ngày hôm nay
+    @GET("api/food-done/time/today")
+    fun getFoodDoneTimeToday(
+        @Query("userId") userId: Long
+    ): Call<Float>
+
+    // Nếu bạn muốn thêm phương thức lấy toàn bộ danh sách món ăn đã ăn
+    @GET("food_done")
+    fun getFoodDoneList(): Call<List<FoodDoneDTO>>
 
 }

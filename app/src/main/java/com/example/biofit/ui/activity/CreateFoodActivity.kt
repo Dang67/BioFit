@@ -65,6 +65,8 @@ import com.example.biofit.ui.components.TopBar
 import com.example.biofit.ui.components.getStandardPadding
 import com.example.biofit.ui.theme.BioFitTheme
 import com.example.biofit.view_model.FoodViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class CreateFoodActivity : ComponentActivity() {
     private var userData: UserDTO? = null
@@ -196,6 +198,9 @@ fun CreateFoodContent(
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
+
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val currentDate = LocalDate.now().format(formatter)
 
     val userId = userData.userId
 
@@ -360,8 +365,9 @@ fun CreateFoodContent(
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
                         prefix = { Text(text = stringResource(R.string.calories) + "*") },
                         suffix = { Text(text = stringResource(R.string.kcal)) },
-                        keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Next
                         ),
                         singleLine = true,
                         shape = MaterialTheme.shapes.large
@@ -377,9 +383,6 @@ fun CreateFoodContent(
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Next
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
                         ),
                         singleLine = true,
                         shape = MaterialTheme.shapes.large
@@ -496,13 +499,12 @@ fun CreateFoodContent(
                             return@ElevatedButton
                         }
 
-
                         val foodDTO = FoodDTO(
                             userId = userId,
                             foodId = 0, // ID có thể do backend tạo
                             foodName = foodName,
                             session = session,
-                            date = "2024-03-30", // Lấy ngày hiện tại nếu cần
+                            date = currentDate,
                             foodImage = "",
                             servingSize = servingSize.toFloatOrNull() ?: 0f,
                             servingSizeUnit = selectedUnitMeasure,

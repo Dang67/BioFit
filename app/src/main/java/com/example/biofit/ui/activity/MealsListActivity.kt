@@ -153,8 +153,6 @@ fun MealsListContent(
             ) {
                 Box {
                     FoodItem(
-                        foodId = foodList[index].foodId,
-                        session = foodList[index].session,
                         foodImg = foodList[index].foodImage,
                         foodName = foodList[index].foodName,
                         servingSize = foodList[index].servingSize,

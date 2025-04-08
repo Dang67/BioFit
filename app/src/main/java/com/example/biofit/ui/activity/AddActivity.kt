@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biofit.R
 import com.example.biofit.data.model.dto.FoodDTO
+import com.example.biofit.data.model.dto.FoodDoneDTO
 import com.example.biofit.data.model.dto.FoodInfoDTO
 import com.example.biofit.data.utils.UserSharedPrefsHelper
 import com.example.biofit.navigation.MainActivity
@@ -71,6 +72,8 @@ import com.example.biofit.ui.components.TopBar
 import com.example.biofit.ui.components.getStandardPadding
 import com.example.biofit.ui.theme.BioFitTheme
 import com.example.biofit.view_model.FoodViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class AddActivity : ComponentActivity() {
     private val foodViewModel: FoodViewModel by viewModels()
@@ -111,7 +114,7 @@ fun AddScreen(
 
     val foodList by foodViewModel.foodList.collectAsState()
     Log.d("Session", "Default option: ${foodList.firstOrNull()?.session}")
-    /*foodList.firstOrNull()?.session?.toIntOrNull() ?: R.string.morning*/
+
     val defaultOption = session
     var selectedOption by remember { mutableIntStateOf(defaultOption ?: -1) }
 
@@ -240,6 +243,7 @@ fun AddContent(
     val activity = context as? Activity
 
     val foodListDTO by foodViewModel.foodList.collectAsState()
+
     // Chuyển đổi danh sách FoodDTO thành FoodInfoDTO
     val foodListInfoDTO = foodListDTO.map { it.toFoodInfoDTO() }
 
@@ -308,7 +312,6 @@ fun AddContent(
     val foodListRecentEvening = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.evening), ignoreCase = true) }
     val foodListRecentSnack = foodListInfoDTO.filter { it.session.equals(stringResource(R.string.snack), ignoreCase = true) }
 
-
     val foodListCreate = when (selectedOption) {
         R.string.morning -> foodListCreateMorning
         R.string.afternoon -> foodListCreateAfternoon
@@ -337,13 +340,11 @@ fun AddContent(
                                 modifier = modifier,
                                 verticalArrangement = Arrangement.spacedBy(standardPadding)
                             ) {
-                                foodListRecent.forEachIndexed { index, _ ->
+                                foodListRecent.forEachIndexed { index, food ->
                                     var expanded by remember { mutableStateOf(false) }
 
                                     Box {
                                         FoodItem(
-                                            foodId = foodListRecent[index].foodId,
-                                            session = foodListRecent[index].session,
                                             foodImg = foodListRecent[index].foodImage,
                                             foodName = foodListRecent[index].foodName,
                                             servingSize = Pair(
@@ -374,16 +375,49 @@ fun AddContent(
                                                     it.startActivity(intent)
                                                 }
                                             },
-                                            onEatClick = { foodId, session ->  // Truyền foodId và session vào đây
-                                                activity?.let {
-                                                    val intent = Intent(it, TrackActivity::class.java)
-                                                    intent.putExtra("FOOD_ID", foodId)
-                                                    intent.putExtra("SESSION", session)
-                                                    it.startActivity(intent)
-                                                }
-                                            },
                                             onLongClick = { expanded = true },
-                                            standardPadding = standardPadding,
+                                            onEatClick = {
+                                                val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                                                // Lấy đúng currentFood từ danh sách chuẩn foodListRecent
+                                                val selectedFoodId = foodListRecent[index].foodId
+                                                val currentFood = foodListRecent.find { it.foodId == selectedFoodId }
+
+                                                if (currentFood != null) {
+                                                    // Kiểm tra xem món ăn đã được thêm vào ngày hôm nay chưa
+                                                    val existingFood = foodViewModel.foodDoneList.value.any {
+                                                        it.foodId == currentFood.foodId &&
+                                                                it.date == currentDate &&
+                                                                it.session.equals(currentFood.session, ignoreCase = true)
+                                                    }
+
+                                                    if (existingFood) {
+                                                        // Nếu món ăn đã được thêm, không cho phép thêm lại và thông báo
+                                                        Toast.makeText(context, "Món này đã được thêm vào hôm nay rồi!", Toast.LENGTH_SHORT).show()
+                                                    } else {
+                                                        // Nếu món ăn chưa được thêm vào ngày hôm nay, tiến hành thêm món ăn mới vào danh sách
+                                                        val foodDoneDTO = FoodDoneDTO.default().copy(
+                                                            foodDoneId = 0,
+                                                            foodId = currentFood.foodId,
+                                                            date = currentDate,
+                                                            session = currentFood.session
+                                                        )
+
+                                                        // Ghi log thông tin về món ăn mới được thêm vào
+                                                        Log.d("DEBUG", "Creating foodDone: $foodDoneDTO")
+
+                                                        // Thêm món ăn vào danh sách
+                                                        foodViewModel.createFoodDone(foodDoneDTO)
+
+                                                        // Thông báo món ăn đã được thêm vào danh sách hôm nay
+                                                        Toast.makeText(context, "Đã thêm món ăn vào danh sách hôm nay!", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                } else {
+                                                    // Thông báo nếu không tìm thấy món ăn trong danh sách
+                                                    Toast.makeText(context, "Không tìm thấy món ăn!", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                            ,
+                                            standardPadding = standardPadding
                                         )
 
                                         DropdownMenu(
@@ -401,8 +435,7 @@ fun AddContent(
                                                     activity?.let {
                                                         val intent =
                                                             Intent(it, EditFoodActivity::class.java).apply {
-                                                                /*putExtra("exerciseId", exercise.exerciseId)
-                                                                putExtra("exerciseDTO", exercise)*/
+                                                                putExtra("foodId", food.foodId)
                                                             }
                                                         it.startActivity(intent)
                                                     }
@@ -426,11 +459,11 @@ fun AddContent(
                                                     )
                                                 },
                                                 onClick = {
-                                                    /*Log.d(
-                                                        "ExerciseListScreen",
-                                                        "Deleting exercise: ${exercise.exerciseId}"
+                                                    Log.d(
+                                                        "FoodListScreen",
+                                                        "Deleting food: ${food.foodId}"
                                                     )
-                                                    exerciseViewModel.deleteExercise(exercise.exerciseId)*/
+                                                    foodViewModel.deleteFood(food.foodId)
                                                     expanded = false
                                                     Toast.makeText(
                                                         context,
@@ -465,13 +498,11 @@ fun AddContent(
                                 modifier = modifier,
                                 verticalArrangement = Arrangement.spacedBy(standardPadding)
                             ) {
-                                foodListCreate.forEachIndexed { index, _ ->
+                                foodListCreate.forEachIndexed { index, food ->
                                     var expanded by remember { mutableStateOf(false) }
 
                                     Box {
                                         FoodItem(
-                                            foodId = foodListCreate[index].foodId,
-                                            session = foodListCreate[index].session,
                                             foodImg = foodListCreate[index].foodImage,
                                             foodName = foodListCreate[index].foodName,
                                             servingSize = Pair(
@@ -497,18 +528,48 @@ fun AddContent(
                                             onClick = {
                                                 activity?.let {
                                                     val intent = Intent(it, FoodDetailActivity::class.java)
-                                                    val foodId = foodListRecent[index].foodId
-                                                    Log.d("FoodItem", "Clicked foodId: $foodId")
+                                                    val foodId = foodListCreate[index].foodId
                                                     intent.putExtra("FOOD_ID", foodId)
                                                     it.startActivity(intent)
                                                 }
                                             },
-                                            onEatClick = { foodId, session ->  // Truyền foodId và session vào đây
-                                                activity?.let {
-                                                    val intent = Intent(it, TrackActivity::class.java)
-                                                    intent.putExtra("FOOD_ID", foodId)
-                                                    intent.putExtra("SESSION", session)
-                                                    it.startActivity(intent)
+                                            onEatClick = {
+                                                val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+                                                // Lấy đúng currentFood từ danh sách chuẩn foodListCreate
+                                                val selectedFoodId = foodListCreate[index].foodId
+                                                val currentFood = foodListCreate.find { it.foodId == selectedFoodId }
+
+                                                if (currentFood != null) {
+                                                    // Kiểm tra xem món ăn đã được thêm vào ngày hôm nay chưa
+                                                    val existingFood = foodViewModel.foodDoneList.value.any {
+                                                        it.foodId == currentFood.foodId &&
+                                                                it.date == currentDate &&
+                                                                it.session.equals(currentFood.session, ignoreCase = true)
+                                                    }
+
+                                                    if (existingFood) {
+                                                        // Nếu món ăn đã được thêm rồi, hiển thị thông báo
+                                                        Toast.makeText(context, "Món này đã được thêm vào hôm nay rồi!", Toast.LENGTH_SHORT).show()
+                                                    } else {
+                                                        // Nếu món ăn chưa có trong danh sách hôm nay, tạo đối tượng FoodDoneDTO mới và thêm vào danh sách
+                                                        val foodDoneDTO = FoodDoneDTO.default().copy(
+                                                            foodDoneId = 0,
+                                                            foodId = currentFood.foodId,
+                                                            date = currentDate,
+                                                            session = currentFood.session
+                                                        )
+
+                                                        Log.d("DEBUG", "Creating foodDone: $foodDoneDTO")
+                                                        // Thêm món ăn vào danh sách đã ăn hôm nay
+                                                        foodViewModel.createFoodDone(foodDoneDTO)
+
+                                                        // Thông báo món ăn đã được thêm vào danh sách
+                                                        Toast.makeText(context, "Đã thêm món ăn vào danh sách hôm nay!", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                } else {
+                                                    // Nếu không tìm thấy món ăn trong danh sách, thông báo lỗi
+                                                    Toast.makeText(context, "Không tìm thấy món ăn!", Toast.LENGTH_SHORT).show()
                                                 }
                                             },
                                             onLongClick = { expanded = true },
@@ -530,8 +591,7 @@ fun AddContent(
                                                     activity?.let {
                                                         val intent =
                                                             Intent(it, EditFoodActivity::class.java).apply {
-                                                                /*putExtra("exerciseId", exercise.exerciseId)
-                                                                putExtra("exerciseDTO", exercise)*/
+                                                                putExtra("foodId", food.foodId)
                                                             }
                                                         it.startActivity(intent)
                                                     }
@@ -555,11 +615,11 @@ fun AddContent(
                                                     )
                                                 },
                                                 onClick = {
-                                                    /*Log.d(
-                                                        "ExerciseListScreen",
-                                                        "Deleting exercise: ${exercise.exerciseId}"
+                                                    Log.d(
+                                                        "FoodListScreen",
+                                                        "Deleting food: ${food.foodId}"
                                                     )
-                                                    exerciseViewModel.deleteExercise(exercise.exerciseId)*/
+                                                    foodViewModel.deleteFood(food.foodId)
                                                     expanded = false
                                                     Toast.makeText(
                                                         context,
@@ -567,6 +627,7 @@ fun AddContent(
                                                         Toast.LENGTH_SHORT
                                                     ).show()
                                                 },
+
                                                 leadingIcon = {
                                                     Icon(
                                                         painter = painterResource(R.drawable.trash),
